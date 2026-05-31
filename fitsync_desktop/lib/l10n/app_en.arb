@@ -1,0 +1,163 @@
+{
+  "@@locale": "en",
+  "appTitle": "FITSync",
+  "@appTitle": { "description": "Application title" },
+
+  "loginTitle": "FITSync Login",
+  "@loginTitle": { "description": "Login page app bar title" },
+
+  "welcomeBack": "Welcome Back",
+  "@welcomeBack": { "description": "Welcome heading on login screen" },
+
+  "username": "Username",
+  "@username": { "description": "Username field label" },
+
+  "password": "Password",
+  "@password": { "description": "Password field label" },
+
+  "loginButton": "Login",
+  "@loginButton": { "description": "Login button text" },
+
+  "registerLink": "Don't have an account? Register",
+  "@registerLink": { "description": "Link to registration page" },
+
+  "pleaseEnterUsername": "Please enter username",
+  "@pleaseEnterUsername": { "description": "Username validation message" },
+
+  "pleaseEnterPassword": "Please enter password",
+  "@pleaseEnterPassword": { "description": "Password validation message" },
+
+  "navDashboard": "Dashboard",
+  "@navDashboard": { "description": "Sidebar nav: dashboard" },
+
+  "navTrainings": "Trainings",
+  "@navTrainings": { "description": "Sidebar nav: trainings" },
+
+  "navReservations": "Reservations",
+  "@navReservations": { "description": "Sidebar nav: reservations" },
+
+  "navClients": "Clients",
+  "@navClients": { "description": "Sidebar nav: clients" },
+
+  "navReviews": "Reviews",
+  "@navReviews": { "description": "Sidebar nav: reviews" },
+
+  "adminPanel": "Admin Panel",
+  "@adminPanel": { "description": "Admin panel subtitle in sidebar" },
+
+  "logout": "Logout",
+  "@logout": { "description": "Logout button tooltip" },
+
+  "registerTitle": "Register",
+  "@registerTitle": { "description": "Register page app bar title" },
+
+  "createAccount": "Create Account",
+  "@createAccount": { "description": "Create account heading" },
+
+  "firstName": "First Name",
+  "@firstName": { "description": "First name field label" },
+
+  "lastName": "Last Name",
+  "@lastName": { "description": "Last name field label" },
+
+  "email": "Email",
+  "@email": { "description": "Email field label" },
+
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": { "description": "Phone number field label" },
+
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": { "description": "Confirm password field label" },
+
+  "required": "Required",
+  "@required": { "description": "Required field validation" },
+
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": { "description": "Password mismatch validation" },
+
+  "language": "Language",
+  "@language": { "description": "Language setting label" },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": { "description": "Language selection dialog title" },
+  "bosnian": "Bosanski",
+  "@bosnian": { "description": "Bosnian language option" },
+  "english": "English",
+  "@english": { "description": "English language option" },
+
+  "reservations": "Reservations",
+  "@reservations": { "description": "Reservations page title" },
+  "searchReservations": "Search by client or training...",
+  "@searchReservations": { "description": "Search reservations placeholder" },
+  "client": "Client",
+  "@client": { "description": "Client column header" },
+  "training": "Training",
+  "@training": { "description": "Training column header" },
+  "date": "Date",
+  "@date": { "description": "Date column header" },
+  "type": "Type",
+  "@type": { "description": "Type column header" },
+  "status": "Status",
+  "@status": { "description": "Status column header" },
+  "actions": "Actions",
+  "@actions": { "description": "Actions column header" },
+  "approve": "Approve",
+  "@approve": { "description": "Approve action" },
+  "cancel": "Cancel",
+  "@cancel": { "description": "Cancel action" },
+  "delete": "Delete",
+  "@delete": { "description": "Delete action" },
+  "deleteReservation": "Delete Reservation",
+  "@deleteReservation": { "description": "Delete reservation dialog title" },
+  "noReservationsFound": "No reservations found",
+  "@noReservationsFound": { "description": "Empty state for reservations" },
+  "refresh": "Refresh",
+  "@refresh": { "description": "Refresh tooltip" },
+
+  "statusInitial": "Initial",
+  "statusApproved": "Approved",
+  "statusPaid": "Paid",
+  "statusCancelled": "Cancelled",
+  "statusCompleted": "Completed",
+  "statusPendingApproval": "Pending Approval",
+
+  "trainings": "Trainings",
+  "searchTrainings": "Search trainings...",
+  "noTrainingsFound": "No trainings found",
+  "addTraining": "Add Training",
+  "editTraining": "Edit Training",
+  "deleteTraining": "Delete Training",
+
+  "users": "Users",
+  "searchUsers": "Search users...",
+  "noUsersFound": "No users found",
+  "sendReminder": "Send Payment Reminder",
+  "deleteUser": "Delete User",
+
+  "reviews": "Reviews",
+  "noReviewsFound": "No reviews found",
+  "deleteReview": "Delete Review",
+
+  "dashboard": "Dashboard",
+  "totalUsers": "Total Users",
+  "totalReservations": "Total Reservations",
+  "totalRevenue": "Total Revenue",
+  "totalTrainings": "Total Trainings",
+
+  "navTrainingTypes": "Training Types",
+  "navAdditionalServices": "Additional Services",
+  "addTrainingType": "Add Training Type",
+  "addAdditionalService": "Add Additional Service",
+  "editUser": "Edit User",
+
+  "navPayments": "Payments",
+  "searchPayments": "Search by client, training or transaction ID...",
+  "totalTransactions": "Total Transactions",
+  "amount": "Amount",
+  "provider": "Provider",
+  "transactionId": "Transaction ID",
+  "cash": "Cash",
+  "noPaymentsFound": "No payments found",
+
+  "myPayments": "My Payments",
+  "noMyPayments": "No payment history yet"
+}
