@@ -147,12 +147,12 @@ flutter build windows --release
 # Izlaz: build/windows/x64/runner/Release/fitsync_desktop.exe
 ```
 
-### Podrazumijevani admin podaci za prijavu
+### Podrazumijevani podaci za prijavu
 
 | Polje | Vrijednost |
 |-------|------------|
-| Korisničko ime | `fitsync@gmail.com` |
-| Lozinka | `Admin123!` |
+| Korisničko ime | `user@fitsync.com` |
+| Lozinka | `User123!` |
 
 ### Lokalizacija
 
