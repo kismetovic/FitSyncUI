@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/reservation.dart';
-import '../../domain/entities/reservation_status.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../domain/repositories/reservations_repository.dart';
 import '../datasources/reservations_remote_data_source.dart';
 
@@ -10,43 +10,46 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
 
   ReservationsRepositoryImpl({required this.remoteDataSource});
 
-  @override
-  Future<Either<Failure, List<Reservation>>> getReservations() async {
+  Future<Either<Failure, T>> _guard<T>(Future<T> Function() action) async {
     try {
-      final result = await remoteDataSource.getReservations();
-      return Right(result);
+      return Right(await action());
     } on Failure catch (e) {
       return Left(e);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, Reservation>> updateReservationStatus(int id, ReservationStatus status) async {
-    try {
-      final result = await remoteDataSource.updateReservation(id, status);
-      return Right(result);
-    } on Failure catch (e) {
-      return Left(e);
-    }
-  }
+  Future<Either<Failure, PagedResult<Reservation>>> getReservations({
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+    String? query,
+  }) =>
+      _guard(() async {
+        final result = await remoteDataSource.getReservations(
+            page: page, pageSize: pageSize, query: query);
+        return PagedResult<Reservation>(
+          items: result.items,
+          page: result.page,
+          pageSize: result.pageSize,
+          totalCount: result.totalCount,
+        );
+      });
 
   @override
-  Future<Either<Failure, Reservation>> approveReservation(int id) async {
-    try {
-      final result = await remoteDataSource.approveReservation(id);
-      return Right(result);
-    } on Failure catch (e) {
-      return Left(e);
-    }
-  }
+  Future<Either<Failure, Reservation>> approveReservation(int id) =>
+      _guard(() async => await remoteDataSource.approveReservation(id));
 
   @override
-  Future<Either<Failure, void>> deleteReservation(int id) async {
-    try {
-      await remoteDataSource.deleteReservation(id);
-      return const Right(null);
-    } on Failure catch (e) {
-      return Left(e);
-    }
-  }
+  Future<Either<Failure, Reservation>> completeReservation(int id, {String? note}) =>
+      _guard(() async => await remoteDataSource.completeReservation(id, note: note));
+
+  @override
+  Future<Either<Failure, Reservation>> cancelReservation(int id, String reason) =>
+      _guard(() async => await remoteDataSource.cancelReservation(id, reason));
+
+  @override
+  Future<Either<Failure, void>> confirmCashPayment(int reservationId, {String? note}) =>
+      _guard(() async => await remoteDataSource.confirmCashPayment(reservationId, note: note));
 }
