@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/training.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../domain/entities/training_difficulty.dart';
 import '../../domain/repositories/trainings_repository.dart';
 import '../datasources/trainings_remote_data_source.dart';
@@ -11,10 +12,20 @@ class TrainingsRepositoryImpl implements TrainingsRepository {
   TrainingsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<Training>>> getTrainings([String? searchQuery]) async {
+  Future<Either<Failure, PagedResult<Training>>> getTrainings({
+    String? searchQuery,
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+  }) async {
     try {
-      final result = await remoteDataSource.getTrainings(searchQuery);
-      return Right(result);
+      final result = await remoteDataSource.getTrainings(
+          searchQuery: searchQuery, page: page, pageSize: pageSize);
+      return Right(PagedResult<Training>(
+        items: result.items,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalCount: result.totalCount,
+      ));
     } on Failure catch (e) {
       return Left(e);
     }

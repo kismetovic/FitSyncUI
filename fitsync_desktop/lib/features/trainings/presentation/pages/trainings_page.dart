@@ -1,12 +1,17 @@
+import 'dart:async';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import '../../domain/entities/training.dart';
 import '../../domain/entities/training_difficulty.dart';
 import '../providers/trainings_provider.dart';
+import '../../../../core/pagination/pagination_bar.dart';
 import '../../../training_types/domain/usecases/get_training_types.dart';
 import '../../../training_types/domain/entities/training_type.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../../injection_container.dart' as di;
+import '../../../../core/utils/money.dart';
 
 class TrainingsPage extends StatefulWidget {
   const TrainingsPage({super.key});
@@ -16,6 +21,16 @@ class TrainingsPage extends StatefulWidget {
 }
 
 class _TrainingsPageState extends State<TrainingsPage> {
+  /// The name filter is applied in SQL, so keystrokes are debounced.
+  Timer? _searchDebounce;
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) context.read<TrainingsProvider>().search(value.trim());
+    });
+  }
+
   final _searchController = TextEditingController();
   List<TrainingType> _trainingTypes = [];
 
@@ -31,12 +46,14 @@ class _TrainingsPageState extends State<TrainingsPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Consumer<TrainingsProvider>(
       builder: (context, provider, _) {
         return Scaffold(
@@ -48,13 +65,13 @@ class _TrainingsPageState extends State<TrainingsPage> {
               children: [
                 Row(
                   children: [
-                    Text('Trainings', style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    Text(l.trainings, style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Colors.white, fontWeight: FontWeight.bold,
                     )),
                     const Spacer(),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Training'),
+                      label: Text(l.addTraining),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE8622A),
                         foregroundColor: Colors.white,
@@ -70,7 +87,7 @@ class _TrainingsPageState extends State<TrainingsPage> {
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Search trainings...',
+                    hintText: l.searchTrainings,
                     hintStyle: TextStyle(color: Colors.grey[500]),
                     prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
                     filled: true,
@@ -80,24 +97,31 @@ class _TrainingsPageState extends State<TrainingsPage> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  onChanged: (v) => provider.loadTrainings(v.isEmpty ? null : v),
+                  onChanged: _onSearchChanged,
                 ),
                 const SizedBox(height: 20),
                 if (provider.error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                    child: Text(apiErrorText(context, provider.errorCode, provider.error), style: const TextStyle(color: Colors.red)),
                   ),
                 Expanded(
                   child: provider.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : provider.trainings.isEmpty
-                          ? _EmptyState(message: 'No trainings found')
+                          ? _EmptyState(message: l.noTrainingsFound)
                           : _TrainingsTable(
                               trainings: provider.trainings,
                               onEdit: (t) => _showTrainingDialog(context, provider, training: t),
                               onDelete: (t) => _confirmDelete(context, provider, t),
                             ),
+                ),
+                PaginationBar(
+                  page: provider.page,
+                  pageSize: provider.pageSize,
+                  totalCount: provider.totalCount,
+                  isLoading: provider.isLoading,
+                  onPageChanged: (p) => provider.loadTrainings(null, p),
                 ),
               ],
             ),
@@ -144,21 +168,23 @@ class _TrainingsPageState extends State<TrainingsPage> {
   }
 
   void _confirmDelete(BuildContext context, TrainingsProvider provider, Training training) {
+    final l = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E2A3A),
-        title: const Text('Delete Training', style: TextStyle(color: Colors.white)),
-        content: Text('Delete "${training.name}"?', style: const TextStyle(color: Colors.white70)),
+        title: Text(l.deleteTraining, style: const TextStyle(color: Colors.white)),
+        content: Text(l.deleteConfirmNamed(training.name),
+            style: const TextStyle(color: Colors.white70)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(context);
               await provider.removeTraining(training.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(l.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -189,10 +215,10 @@ class _TrainingsTable extends StatelessWidget {
           child: Row(children: [
             Expanded(flex: 3, child: _h('Naziv')),
             Expanded(flex: 2, child: _h('Tip')),
-            Expanded(flex: 1, child: _h('Cijena')),
-            Expanded(flex: 2, child: _h('Trajanje')),
+            Expanded(flex: 2, child: _h('Cijena')),
+            Expanded(flex: 1, child: _h('Trajanje')),
             Expanded(flex: 1, child: _h('Kapacitet')),
-            Expanded(flex: 2, child: _h('Tezina')),
+            Expanded(flex: 2, child: _h('Težina')),
             Expanded(flex: 1, child: _h('Ocjena')),
             Expanded(flex: 1, child: _h('Akcije')),
           ]),
@@ -210,7 +236,7 @@ class _TrainingsTable extends StatelessWidget {
                       style: const TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis))),
                   Expanded(flex: 2, child: _d(Text(t.trainingTypeName ?? '—',
                       style: const TextStyle(color: Colors.white70), overflow: TextOverflow.ellipsis))),
-                  Expanded(flex: 1, child: _d(Text('\$${t.price.toStringAsFixed(0)}',
+                  Expanded(flex: 2, child: _d(Text(formatMoney(t.price),
                       style: const TextStyle(color: Colors.white)))),
                   Expanded(flex: 2, child: _d(Text('${t.durationMinutes} min',
                       style: const TextStyle(color: Colors.white70)))),
@@ -227,14 +253,14 @@ class _TrainingsTable extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit, color: Color(0xFF4A90D9), size: 18),
                       onPressed: () => onEdit(t),
-                      tooltip: 'Edit',
+                      tooltip: AppLocalizations.of(context).edit,
                       padding: EdgeInsets.zero, constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 4),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red, size: 18),
                       onPressed: () => onDelete(t),
-                      tooltip: 'Delete',
+                      tooltip: AppLocalizations.of(context).delete,
                       padding: EdgeInsets.zero, constraints: const BoxConstraints(),
                     ),
                   ]))),
@@ -375,13 +401,16 @@ class _TrainingDialogState extends State<_TrainingDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context).cancel)),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8622A)),
           onPressed: _saving ? null : _save,
           child: _saving
               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text('Save', style: TextStyle(color: Colors.white)),
+              : Text(AppLocalizations.of(context).save,
+                  style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

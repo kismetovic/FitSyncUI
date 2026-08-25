@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/error/dio_failure.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/error/failures.dart';
 import '../models/training_type_model.dart';
@@ -35,7 +36,7 @@ class TrainingTypesRemoteDataSourceImpl implements TrainingTypesRemoteDataSource
         throw const ServerFailure('Failed to get training types');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -55,7 +56,7 @@ class TrainingTypesRemoteDataSourceImpl implements TrainingTypesRemoteDataSource
         throw const ServerFailure('Failed to create training type');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -75,7 +76,7 @@ class TrainingTypesRemoteDataSourceImpl implements TrainingTypesRemoteDataSource
         throw const ServerFailure('Failed to update training type');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -92,7 +93,7 @@ class TrainingTypesRemoteDataSourceImpl implements TrainingTypesRemoteDataSource
         throw const ServerFailure('Failed to delete training type');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 }
