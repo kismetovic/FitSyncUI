@@ -98,6 +98,348 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// Package business rules
+  ///
+  /// In en, this message translates to:
+  /// **'The client already has a package covering the same trainings.'**
+  String get errMembershipOverlap;
+
+  /// Package business rules
+  ///
+  /// In en, this message translates to:
+  /// **'A package with sessions already spent cannot be cancelled.'**
+  String get errMembershipInUse;
+
+  /// Package business rules
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled package cannot be paid for.'**
+  String get errMembershipCancelled;
+
+  /// Package business rules
+  ///
+  /// In en, this message translates to:
+  /// **'This package is already cancelled.'**
+  String get errAlreadyCancelled;
+
+  /// Package business rules
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order belongs to a different package.'**
+  String get errOrderPackageMismatch;
+
+  /// Contact field label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// Desktop navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly packages'**
+  String get navMonthlyPackages;
+
+  /// Desktop navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get navReports;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get navStaff;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Administrators'**
+  String get navAdministrators;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Trainers'**
+  String get navTrainersTab;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get navHelp;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'FAQs'**
+  String get faqs;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get addFaq;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Edit question'**
+  String get editFaq;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Delete question'**
+  String get deleteFaq;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get question;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get answer;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Sort order'**
+  String get sortOrder;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Visible in the app'**
+  String get visible;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet'**
+  String get noFaqs;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Support contact'**
+  String get supportContact;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'These details are shown to clients on the help screen.'**
+  String get supportContactHint;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours'**
+  String get workingHours;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// Desktop admin: staff/clients split and help content management
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get saved;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'The server is not responding. Check that it is running and try again.'**
+  String get errNetworkTimeout;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server. Check your network or that the API is running.'**
+  String get errNetworkUnreachable;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong username or password.'**
+  String get errInvalidCredentials;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a reservation at this time. Enable the out-of-hours option to request an exception.'**
+  String get errTimeConflict;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This term is full. Please choose another time.'**
+  String get errCapacityFull;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A reservation cannot be made for a time that has already passed.'**
+  String get errDateInPast;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected slot is outside the trainer\'s working hours. Enable the out-of-hours option to send a request for approval; an extra fee applies.'**
+  String get errOutsideAvailability;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A monthly reservation needs an active package with sessions left that covers this training type.'**
+  String get errNoUsableMembership;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected package does not cover this training type.'**
+  String get errMembershipMismatch;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled or completed reservation can no longer be edited.'**
+  String get errReservationClosed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled reservation cannot be paid.'**
+  String get errReservationCancelled;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancellation reason is required.'**
+  String get errReasonRequired;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected training does not exist.'**
+  String get errTrainingNotFound;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'One or more selected additional services do not exist.'**
+  String get errInvalidService;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation has already been paid.'**
+  String get errAlreadyPaid;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation has no outstanding amount; it is covered by a monthly package.'**
+  String get errNothingToPay;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation is still waiting for trainer approval and cannot be paid yet.'**
+  String get errAwaitingApproval;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order belongs to a different reservation.'**
+  String get errOrderMismatch;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The payment did not pass verification. Nothing was recorded; please try again or contact us.'**
+  String get errVerificationFailed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The payment has not been approved on PayPal yet. Finish the approval, then return to the app.'**
+  String get errOrderNotApproved;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order has already been captured.'**
+  String get errOrderAlreadyCaptured;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal declined the selected payment method. Choose another card or account.'**
+  String get errInstrumentDeclined;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal requires an extra confirmation. Open PayPal again and finish the payment.'**
+  String get errPayerActionRequired;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You can only review a training you have paid for and attended.'**
+  String get errTrainingNotAttended;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You have already reviewed this training session.'**
+  String get errAlreadyReviewed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This membership package is no longer on sale.'**
+  String get errPackageInactive;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A membership cannot start in the past.'**
+  String get errStartInPast;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A reservation in its current status cannot move to the requested status.'**
+  String get errInvalidStatus;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This window overlaps an availability slot the trainer already has.'**
+  String get errAvailabilityOverlap;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get errUnexpected;
+
   /// Application title
   ///
   /// In en, this message translates to:
@@ -595,6 +937,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No payment history yet'**
   String get noMyPayments;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Search reviews...'**
+  String get searchReviews;
+
+  /// Delete confirmation for a named record
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteConfirmNamed(String name);
 }
 
 class _AppLocalizationsDelegate
