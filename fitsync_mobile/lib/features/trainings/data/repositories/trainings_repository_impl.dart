@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/training.dart';
+import '../../domain/entities/recommended_training.dart';
 import '../../domain/repositories/trainings_repository.dart';
 import '../datasources/trainings_remote_data_source.dart';
 
@@ -22,7 +23,7 @@ class TrainingsRepositoryImpl implements TrainingsRepository {
   }
 
   @override
-  Future<Either<Failure, List<Training>>> getRecommendations() async {
+  Future<Either<Failure, List<RecommendedTraining>>> getRecommendations() async {
     try {
       final result = await remoteDataSource.getRecommendations();
       return Right(result);

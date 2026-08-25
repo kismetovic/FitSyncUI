@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/training.dart';
+import '../../domain/entities/recommended_training.dart';
 import '../../domain/usecases/get_recommendations.dart';
 
 class RecommendationsProvider extends ChangeNotifier {
@@ -8,8 +8,8 @@ class RecommendationsProvider extends ChangeNotifier {
 
   RecommendationsProvider({required this.getRecommendations});
 
-  List<Training> _recommendations = [];
-  List<Training> get recommendations => _recommendations;
+  List<RecommendedTraining> _recommendations = [];
+  List<RecommendedTraining> get recommendations => _recommendations;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
