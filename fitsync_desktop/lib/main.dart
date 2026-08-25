@@ -93,9 +93,67 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator(color: Color(0xFFE8622A))),
           );
         }
-        if (auth.user != null) return const MainShellPage();
-        return const LoginPage();
+
+        if (auth.user == null) return const LoginPage();
+
+        // This desktop build is the administration console. A signed-in client has a
+        // valid account but no business here, so the admin shell is not shown at all.
+        // The API enforces the same rule on every endpoint; this is the UI half of it.
+        if (!auth.isAdministrator) return const _NotAuthorizedPage();
+
+        return const MainShellPage();
       },
+    );
+  }
+}
+
+/// Shown when a non-administrator signs in to the desktop app.
+class _NotAuthorizedPage extends StatelessWidget {
+  const _NotAuthorizedPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1923),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.admin_panel_settings_outlined, color: Color(0xFFE8622A), size: 72),
+                const SizedBox(height: 24),
+                const Text(
+                  'Pristup nije dozvoljen',
+                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Desktop aplikacija je namijenjena administratorima teretane. '
+                  'Vaš nalog nema administratorsku rolu.\n\n'
+                  'Za rezervacije i plaćanja koristite FitSync mobilnu aplikaciju.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[400], height: 1.5),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    onPressed: auth.logout,
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Odjavi se'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

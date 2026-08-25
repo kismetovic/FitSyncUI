@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'register_page.dart';
@@ -18,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -44,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
                           padding: const EdgeInsets.all(8),
                           color: Colors.red.shade100,
                           child: Text(
-                            authProvider.error!,
+                            apiErrorText(context, authProvider.errorCode, authProvider.error),
                             style: TextStyle(color: Colors.red.shade900),
                           ),
                         ),

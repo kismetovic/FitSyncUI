@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'package:fitsync_mobile/l10n/app_localizations.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -40,8 +41,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (!mounted) return;
     if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password changed successfully'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).passwordChangedSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -67,7 +68,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF152030),
         foregroundColor: Colors.white,
-        title: const Text('Change Password'),
+        title: Text(AppLocalizations.of(context).changePassword),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -152,13 +153,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                   ),
                   onPressed: isLoading ? null : _submit,
                   child: isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 22,
                           height: 22,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2),
                         )
-                      : const Text('Update Password',
+                      : Text(AppLocalizations.of(context).updatePassword,
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),

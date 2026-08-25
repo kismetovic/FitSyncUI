@@ -30,22 +30,38 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   AuthRemoteDataSourceImpl({required this.dio, required this.localDataSource});
 
-  String _dioErrorMessage(DioException e) {
+  /// Builds a failure that carries a stable code as well as a message, so the
+  /// screen can print the reason in the user's language. The message stays in
+  /// English as a fallback for a code the UI does not know.
+  ServerFailure _dioFailure(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      return 'Connection timed out. Please check the server is running.';
+      return const ServerFailure(
+          'Connection timed out. Please check the server is running.',
+          'NETWORK_TIMEOUT');
     }
     if (e.type == DioExceptionType.connectionError) {
-      return 'Cannot reach server. Check your network or that the API is running.';
+      return const ServerFailure(
+          'Cannot reach server. Check your network or that the API is running.',
+          'NETWORK_UNREACHABLE');
     }
     final body = e.response?.data;
     if (body is Map) {
-      return body['message']?.toString() ??
-          body['title']?.toString() ??
-          body.toString();
+      final code = body['error']?.toString();
+      final message = body['message']?.toString() ?? body['title']?.toString();
+      if (message != null) return ServerFailure(message, code);
+
+      // ASP.NET model validation: { errors: { Field: ["..."] } }
+      if (body['errors'] is Map) {
+        final first = (body['errors'] as Map).values.first;
+        if (first is List && first.isNotEmpty) {
+          return ServerFailure(first.first.toString(), code);
+        }
+      }
+      if (code != null) return ServerFailure(code, code);
     }
-    return body?.toString() ?? e.message ?? 'Request failed';
+    return ServerFailure(body?.toString() ?? e.message ?? 'Request failed');
   }
 
   @override
@@ -71,7 +87,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on Failure {
       rethrow;
     } on DioException catch (e) {
-      throw ServerFailure(_dioErrorMessage(e));
+      throw _dioFailure(e);
     }
   }
 
@@ -110,7 +126,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on Failure {
       rethrow;
     } on DioException catch (e) {
-      throw ServerFailure(_dioErrorMessage(e));
+      throw _dioFailure(e);
     }
   }
 
@@ -133,7 +149,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on Failure {
       rethrow;
     } on DioException catch (e) {
-      throw ServerFailure(_dioErrorMessage(e));
+      throw _dioFailure(e);
     }
   }
 
@@ -163,7 +179,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on Failure {
       rethrow;
     } on DioException catch (e) {
-      throw ServerFailure(_dioErrorMessage(e));
+      throw _dioFailure(e);
     }
   }
 }
