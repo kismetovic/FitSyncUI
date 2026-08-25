@@ -44,6 +44,9 @@ dependencies:
   intl: ^0.20.2
   flutter_dotenv: ^5.2.1
   google_fonts: ^6.2.1
+  # PDF generation and printing for the two required desktop reports.
+  pdf: ^3.11.3
+  printing: ^5.14.2
   flutter_localizations:
     sdk: flutter
 
@@ -70,6 +73,10 @@ flutter:
   assets:
     - .env
     - assets/icons/
+    # Roboto (Apache 2.0) is bundled for the PDF reports: the pdf package
+    # falls back to Helvetica, which has no glyphs for the Bosnian diacritics,
+    # so names printed as empty boxes.
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
