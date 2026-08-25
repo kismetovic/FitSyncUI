@@ -17,15 +17,23 @@ class DashboardProvider extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  /// Stable API code behind [error] (TIME_CONFLICT, AVAILABILITY_OVERLAP, …),
+  /// so the screen can print the rule in the user's language rather than the
+  /// server's English sentence.
+  String? _errorCode;
+  String? get errorCode => _errorCode;
+
   Future<void> loadStats() async {
     _isLoading = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     final result = await getDashboardStats(NoParams());
     result.fold(
       (failure) {
         _error = failure.message;
+        _errorCode = failure.code;
         _isLoading = false;
         notifyListeners();
       },
