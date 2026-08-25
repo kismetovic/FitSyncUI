@@ -4,46 +4,42 @@ import '../../../../core/error/failures.dart';
 import '../entities/user.dart';
 import '../repositories/users_repository.dart';
 
-class UpdateUserParams extends Equatable {
-  final int id;
+class CreateUserParams extends Equatable {
   final String userName;
+  final String email;
+  final String password;
   final String firstName;
   final String lastName;
-  final String email;
   final String? phoneNumber;
   final String role;
-
-  /// Carried explicitly rather than defaulted, so an edit can never flip an
-  /// account back to enabled as a side effect.
   final bool enabled;
 
-  const UpdateUserParams({
-    required this.id,
+  const CreateUserParams({
     required this.userName,
+    required this.email,
+    required this.password,
     required this.firstName,
     required this.lastName,
-    required this.email,
     this.phoneNumber,
     required this.role,
-    required this.enabled,
+    this.enabled = true,
   });
 
   @override
   List<Object?> get props =>
-      [id, userName, firstName, lastName, email, phoneNumber, role, enabled];
+      [userName, email, password, firstName, lastName, phoneNumber, role, enabled];
 }
 
-class UpdateUser {
+class CreateUser {
   final UsersRepository repository;
-  UpdateUser(this.repository);
+  CreateUser(this.repository);
 
-  Future<Either<Failure, User>> call(UpdateUserParams params) =>
-      repository.updateUser(
-        params.id,
+  Future<Either<Failure, User>> call(CreateUserParams params) => repository.createUser(
         userName: params.userName,
+        email: params.email,
+        password: params.password,
         firstName: params.firstName,
         lastName: params.lastName,
-        email: params.email,
         phoneNumber: params.phoneNumber,
         role: params.role,
         enabled: params.enabled,
