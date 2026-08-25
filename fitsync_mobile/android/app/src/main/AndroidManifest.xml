@@ -1,8 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The app talks to the FitSync API and opens PayPal, so it needs the network
+         in every build type. Flutter only adds this to the debug and profile
+         manifests, which is why a release build could not reach the API. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="FITSync"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -40,6 +46,13 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- url_launcher opens the official PayPal approval page in the browser.
+             From Android 11 up, canLaunchUrl() cannot see a browser without this
+             declaration, so the PayPal step would silently refuse to open. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

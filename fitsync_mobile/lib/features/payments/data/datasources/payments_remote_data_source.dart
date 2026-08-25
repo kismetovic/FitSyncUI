@@ -1,29 +1,29 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/error/failures.dart';
 import '../../../auth/data/datasources/auth_local_data_source.dart';
-import '../../../payments/domain/entities/payment.dart';
+import '../models/paypal_order_model.dart';
 import '../models/payment_model.dart';
 
+/// Payment calls as the backend now defines them: the app names a reservation and the
+/// server decides the amount. There is no endpoint here that lets the client state a
+/// price or declare a payment successful.
 abstract class PaymentsRemoteDataSource {
   Future<List<PaymentModel>> getMyPayments();
-  Future<Map<String, String>> createPayPalOrder({
-    required double amount,
-    required int reservationId,
-    String currency,
-  });
-  Future<String> capturePayPalOrder(String orderId);
-  Future<PaymentModel> confirmPayment({
-    required double amount,
-    required String transactionId,
-    required PaymentProvider paymentProvider,
-    required int reservationId,
-    String currency,
-  });
-  Future<PaymentModel> confirmCashPayment({
-    required double amount,
+
+  /// Asks the backend to open a PayPal order for a reservation.
+  Future<PayPalOrderModel> createPayPalOrder({required int reservationId});
+
+  /// Asks the backend to capture the approved order and verify it with PayPal.
+  Future<PayPalCaptureModel> capturePayPalOrder({
+    required String orderId,
     required int reservationId,
   });
+
+  /// Records the intent to pay on arrival. Does not mark the reservation as paid.
+  Future<PaymentModel> selectCashPayment({required int reservationId});
+
+  Future<PaymentModel?> getPaymentForReservation(int reservationId);
 }
 
 class PaymentsRemoteDataSourceImpl implements PaymentsRemoteDataSource {
@@ -33,6 +33,24 @@ class PaymentsRemoteDataSourceImpl implements PaymentsRemoteDataSource {
   String get baseUrl => AppConfig.baseUrl;
 
   PaymentsRemoteDataSourceImpl({required this.dio, required this.localDataSource});
+
+  Future<Options> _getAuthOptions() async {
+    final token = await localDataSource.getToken();
+    return Options(headers: {'Authorization': 'Bearer $token'});
+  }
+
+  /// The API returns {error, message} on every failure, so surface the server's own
+  /// message rather than a generic one.
+  Failure _toFailure(DioException e) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] != null) {
+      // The code travels with the message: the payment screen has to tell
+      // ORDER_NOT_APPROVED (the user simply has not finished at PayPal yet) apart
+      // from a real failure, and matching on prose would be fragile.
+      return ServerFailure(data['message'].toString(), data['error']?.toString());
+    }
+    return ServerFailure(e.message ?? 'Zahtjev nije uspio.');
+  }
 
   @override
   Future<List<PaymentModel>> getMyPayments() async {
@@ -48,95 +66,76 @@ class PaymentsRemoteDataSourceImpl implements PaymentsRemoteDataSource {
     }
   }
 
-  Future<Options> _getAuthOptions() async {
-    final token = await localDataSource.getToken();
-    return Options(headers: {'Authorization': 'Bearer $token'});
-  }
-
   @override
-  Future<Map<String, String>> createPayPalOrder({
-    required double amount,
-    required int reservationId,
-    String currency = 'USD',
-  }) async {
+  Future<PayPalOrderModel> createPayPalOrder({required int reservationId}) async {
     try {
       final opts = await _getAuthOptions();
       final response = await dio.post(
         '$baseUrl/Payments/paypal/create-order',
-        data: {'amount': amount, 'currency': currency, 'reservationId': reservationId},
+        // Only the reservation id. Amount and currency come from the reservation
+        // record on the server.
+        data: {'reservationId': reservationId},
         options: opts,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data as Map<String, dynamic>;
-        return {
-          'orderId': data['orderId']?.toString() ?? '',
-          'approvalUrl': data['approvalUrl']?.toString() ?? '',
-        };
+        return PayPalOrderModel.fromJson(response.data as Map<String, dynamic>);
       }
-      throw const ServerFailure('Failed to create PayPal order');
+      throw const ServerFailure('Kreiranje PayPal narudžbe nije uspjelo.');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw _toFailure(e);
     }
   }
 
   @override
-  Future<String> capturePayPalOrder(String orderId) async {
-    try {
-      final opts = await _getAuthOptions();
-      final response = await dio.post(
-        '$baseUrl/Payments/paypal/capture',
-        data: {'orderId': orderId},
-        options: opts,
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data['transactionId']?.toString() ?? '';
-      }
-      throw const ServerFailure('Failed to capture PayPal order');
-    } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
-    }
-  }
-
-  @override
-  Future<PaymentModel> confirmPayment({
-    required double amount,
-    required String transactionId,
-    required PaymentProvider paymentProvider,
+  Future<PayPalCaptureModel> capturePayPalOrder({
+    required String orderId,
     required int reservationId,
-    String currency = 'USD',
   }) async {
     try {
       final opts = await _getAuthOptions();
       final response = await dio.post(
-        '$baseUrl/Payments/confirm',
-        data: {
-          'amount': amount,
-          'transactionId': transactionId,
-          'currency': currency,
-          'paymentProvider': paymentProvider.index,
-          'reservationId': reservationId,
-        },
+        '$baseUrl/Payments/paypal/capture',
+        data: {'orderId': orderId, 'reservationId': reservationId},
+        options: opts,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return PayPalCaptureModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw const ServerFailure('Naplata PayPal narudžbe nije uspjela.');
+    } on DioException catch (e) {
+      throw _toFailure(e);
+    }
+  }
+
+  @override
+  Future<PaymentModel> selectCashPayment({required int reservationId}) async {
+    try {
+      final opts = await _getAuthOptions();
+      final response = await dio.post(
+        '$baseUrl/Payments/cash/select',
+        data: {'reservationId': reservationId},
         options: opts,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return PaymentModel.fromJson(response.data);
       }
-      throw const ServerFailure('Failed to confirm payment');
+      throw const ServerFailure('Odabir plaćanja pri dolasku nije uspio.');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw _toFailure(e);
     }
   }
 
   @override
-  Future<PaymentModel> confirmCashPayment({
-    required double amount,
-    required int reservationId,
-  }) async {
-    return confirmPayment(
-      amount: amount,
-      transactionId: 'CASH-${DateTime.now().millisecondsSinceEpoch}',
-      paymentProvider: PaymentProvider.cash,
-      reservationId: reservationId,
-    );
+  Future<PaymentModel?> getPaymentForReservation(int reservationId) async {
+    try {
+      final opts = await _getAuthOptions();
+      final response = await dio.get('$baseUrl/Payments/by-reservation/$reservationId', options: opts);
+      if (response.statusCode == 200) {
+        return PaymentModel.fromJson(response.data);
+      }
+      return null;
+    } on DioException {
+      return null;
+    }
   }
 }

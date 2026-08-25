@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/payment.dart';
 import '../providers/payments_provider.dart';
+import '../../../../core/utils/money.dart';
 
 class MyPaymentsPage extends StatefulWidget {
   const MyPaymentsPage({super.key});
@@ -23,7 +24,7 @@ class _MyPaymentsPageState extends State<MyPaymentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     return Consumer<PaymentsProvider>(
       builder: (context, provider, _) => Scaffold(
         backgroundColor: const Color(0xFF0F1923),
@@ -63,8 +64,9 @@ class _PaymentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = DateFormat('dd.MM.yyyy HH:mm');
     final isPayPal = payment.paymentProvider == PaymentProvider.paypal;
-    final providerColor = isPayPal ? const Color(0xFF003087) : const Color(0xFF4A90D9);
-    final providerLabel = isPayPal ? 'PayPal' : 'Gotovina';
+    final providerColor = isPayPal ? const Color(0xFF3D95CE) : const Color(0xFF4A90D9);
+    final l = AppLocalizations.of(context);
+    final providerLabel = isPayPal ? 'PayPal' : l.cash;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -94,7 +96,7 @@ class _PaymentCard extends StatelessWidget {
                 Row(children: [
                   Expanded(
                     child: Text(
-                      '\$${payment.amount.toStringAsFixed(2)}',
+                      formatMoney(payment.amount),
                       style: const TextStyle(
                           color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -105,8 +107,15 @@ class _PaymentCard extends StatelessWidget {
                 Text(fmt.format(payment.createdAt),
                     style: TextStyle(color: Colors.grey[400], fontSize: 12)),
                 const SizedBox(height: 2),
-                Text('Rezervacija #${payment.reservationId}',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                Text(
+                  payment.subject.isNotEmpty
+                      ? payment.subject
+                      : (payment.userMembershipId != null
+                          ? l.monthlyPackage
+                          : '${l.reservation} #${payment.reservationId ?? '-'}'),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
