@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/reservation.dart';
-import '../../domain/entities/reservation_status.dart';
 import '../../domain/entities/reservation_type.dart';
+import '../../domain/entities/slot_availability.dart';
 import '../../domain/repositories/reservations_repository.dart';
 import '../datasources/reservations_remote_data_source.dart';
 
@@ -14,8 +14,7 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
   @override
   Future<Either<Failure, List<Reservation>>> getMyReservations() async {
     try {
-      final result = await remoteDataSource.getMyReservations();
-      return Right(result);
+      return Right(await remoteDataSource.getMyReservations());
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
@@ -24,10 +23,9 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
   }
 
   @override
-  Future<List<Reservation>> getReservationsByTraining(int trainingId) async {
+  Future<List<SlotAvailability>> getTrainingAvailability(int trainingId, {int days = 14}) async {
     try {
-      final result = await remoteDataSource.getReservationsByTraining(trainingId);
-      return result;
+      return await remoteDataSource.getTrainingAvailability(trainingId, days: days);
     } catch (_) {
       return [];
     }
@@ -40,16 +38,17 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
     required ReservationType reservationType,
     List<int> additionalServiceIds = const [],
     bool requestOutsideAvailability = false,
+    int? userMembershipId,
   }) async {
     try {
-      final result = await remoteDataSource.createReservation(
+      return Right(await remoteDataSource.createReservation(
         trainingId: trainingId,
         reservationDate: reservationDate,
         reservationType: reservationType,
         additionalServiceIds: additionalServiceIds,
         requestOutsideAvailability: requestOutsideAvailability,
-      );
-      return Right(result);
+        userMembershipId: userMembershipId,
+      ));
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
@@ -58,22 +57,9 @@ class ReservationsRepositoryImpl implements ReservationsRepository {
   }
 
   @override
-  Future<Either<Failure, Reservation>> updateReservation(int id, ReservationStatus status) async {
+  Future<Either<Failure, Reservation>> cancelReservation(int id, String reason) async {
     try {
-      final result = await remoteDataSource.updateReservation(id, status);
-      return Right(result);
-    } on Failure catch (e) {
-      return Left(e);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> cancelReservation(int id) async {
-    try {
-      await remoteDataSource.cancelReservation(id);
-      return const Right(null);
+      return Right(await remoteDataSource.cancelReservation(id, reason));
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {

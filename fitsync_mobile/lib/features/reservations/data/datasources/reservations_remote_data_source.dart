@@ -3,21 +3,29 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/error/failures.dart';
 import '../../../auth/data/datasources/auth_local_data_source.dart';
 import '../models/reservation_model.dart';
-import '../../domain/entities/reservation_status.dart';
+import '../models/slot_availability_model.dart';
 import '../../domain/entities/reservation_type.dart';
 
 abstract class ReservationsRemoteDataSource {
   Future<List<ReservationModel>> getMyReservations();
-  Future<List<ReservationModel>> getReservationsByTraining(int trainingId);
+
+  /// Free places per day, without exposing other clients' bookings.
+  Future<List<SlotAvailabilityModel>> getTrainingAvailability(int trainingId, {int days});
+
+  /// Creates a reservation. Neither the owner nor the status is sent: the backend
+  /// takes the owner from the JWT and decides the initial status itself.
   Future<ReservationModel> createReservation({
     required int trainingId,
     required DateTime reservationDate,
     required ReservationType reservationType,
     List<int> additionalServiceIds,
     bool requestOutsideAvailability,
+    int? userMembershipId,
   });
-  Future<ReservationModel> updateReservation(int id, ReservationStatus status);
-  Future<void> cancelReservation(int id);
+
+  /// Cancels a reservation through the dedicated endpoint, with a mandatory reason.
+  /// The reservation stays in the system as cancelled rather than being deleted.
+  Future<ReservationModel> cancelReservation(int id, String reason);
 }
 
 class ReservationsRemoteDataSourceImpl implements ReservationsRemoteDataSource {
@@ -33,27 +41,48 @@ class ReservationsRemoteDataSourceImpl implements ReservationsRemoteDataSource {
     return Options(headers: {'Authorization': 'Bearer $token'});
   }
 
+  /// Surfaces the server's own error message and code. The backend answers
+  /// {error, message} for every failure, e.g. TIME_CONFLICT or CAPACITY_FULL.
+  Failure _toFailure(DioException e) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final code = data['error']?.toString();
+      final message = data['message']?.toString();
+      if (message != null) return ServerFailure(message, code);
+      // Validation failures carry a per-field map.
+      if (data['errors'] is Map) {
+        final first = (data['errors'] as Map).values.first;
+        if (first is List && first.isNotEmpty) return ServerFailure(first.first.toString());
+      }
+    }
+    return ServerFailure(e.message ?? 'Zahtjev nije uspio.');
+  }
+
   @override
   Future<List<ReservationModel>> getMyReservations() async {
     try {
       final opts = await _getAuthOptions();
-      final response = await dio.get('$baseUrl/Reservations/my', options: opts);
+      final response = await dio.get('$baseUrl/Reservations/mine', options: opts);
       if (response.statusCode == 200) {
         return (response.data as List).map((e) => ReservationModel.fromJson(e)).toList();
       }
-      throw const ServerFailure('Failed to get reservations');
+      throw const ServerFailure('Dohvat rezervacija nije uspio.');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw _toFailure(e);
     }
   }
 
   @override
-  Future<List<ReservationModel>> getReservationsByTraining(int trainingId) async {
+  Future<List<SlotAvailabilityModel>> getTrainingAvailability(int trainingId, {int days = 14}) async {
     try {
       final opts = await _getAuthOptions();
-      final response = await dio.get('$baseUrl/Reservations/by-training/$trainingId', options: opts);
+      final response = await dio.get(
+        '$baseUrl/Reservations/availability/$trainingId',
+        queryParameters: {'days': days},
+        options: opts,
+      );
       if (response.statusCode == 200) {
-        return (response.data as List).map((e) => ReservationModel.fromJson(e)).toList();
+        return (response.data as List).map((e) => SlotAvailabilityModel.fromJson(e)).toList();
       }
       return [];
     } on DioException {
@@ -68,6 +97,7 @@ class ReservationsRemoteDataSourceImpl implements ReservationsRemoteDataSource {
     required ReservationType reservationType,
     List<int> additionalServiceIds = const [],
     bool requestOutsideAvailability = false,
+    int? userMembershipId,
   }) async {
     try {
       final opts = await _getAuthOptions();
@@ -76,48 +106,37 @@ class ReservationsRemoteDataSourceImpl implements ReservationsRemoteDataSource {
         'reservationDate': reservationDate.toIso8601String(),
         'reservationType': reservationType.index,
         'additionalServiceIds': additionalServiceIds,
+        // Asks for an out-of-hours slot. The backend re-checks this against the
+        // trainer's availability and decides the surcharge and the status.
+        'requestOutsideAvailability': requestOutsideAvailability,
+        if (userMembershipId != null) 'userMembershipId': userMembershipId,
       };
-      if (requestOutsideAvailability) {
-        body['status'] = 5;
-      }
+
       final response = await dio.post('$baseUrl/Reservations', data: body, options: opts);
       if (response.statusCode == 200 || response.statusCode == 201) {
         return ReservationModel.fromJson(response.data);
       }
-      throw const ServerFailure('Failed to create reservation');
+      throw const ServerFailure('Kreiranje rezervacije nije uspjelo.');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw _toFailure(e);
     }
   }
 
   @override
-  Future<ReservationModel> updateReservation(int id, ReservationStatus status) async {
+  Future<ReservationModel> cancelReservation(int id, String reason) async {
     try {
       final opts = await _getAuthOptions();
-      final currentResp = await dio.get('$baseUrl/Reservations/$id', options: opts);
-      if (currentResp.statusCode != 200) throw const ServerFailure('Failed to fetch reservation');
-
-      final data = Map<String, dynamic>.from(currentResp.data);
-      data['status'] = status.index;
-
-      final response = await dio.put('$baseUrl/Reservations/$id', data: data, options: opts);
-      if (response.statusCode == 200) return ReservationModel.fromJson(response.data);
-      throw const ServerFailure('Failed to update reservation');
-    } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
-    }
-  }
-
-  @override
-  Future<void> cancelReservation(int id) async {
-    try {
-      final opts = await _getAuthOptions();
-      final response = await dio.delete('$baseUrl/Reservations/$id', options: opts);
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw const ServerFailure('Failed to cancel reservation');
+      final response = await dio.patch(
+        '$baseUrl/Reservations/$id/cancel',
+        data: {'reason': reason},
+        options: opts,
+      );
+      if (response.statusCode == 200) {
+        return ReservationModel.fromJson(response.data);
       }
+      throw const ServerFailure('Otkazivanje rezervacije nije uspjelo.');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw _toFailure(e);
     }
   }
 }
