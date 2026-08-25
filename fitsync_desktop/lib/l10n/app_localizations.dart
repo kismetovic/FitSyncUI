@@ -98,6 +98,30 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.'**
+  String get errComplianceViolation;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'The gym PayPal account cannot accept this payment right now.'**
+  String get errPayeeRestricted;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal does not support this currency for one of the accounts involved.'**
+  String get errCurrencyNotSupported;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken.'**
+  String get errTransactionRefused;
+
   /// Package business rules
   ///
   /// In en, this message translates to:

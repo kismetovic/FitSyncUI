@@ -1,4 +1,10 @@
 {
+  "errComplianceViolation": "PayPal je odbio ovu transakciju. Uplata nije naplaćena. Pokušajte drugim načinom plaćanja ili nas kontaktirajte.",
+  "errPayeeRestricted": "PayPal nalog teretane trenutno ne može primiti ovu uplatu.",
+  "errCurrencyNotSupported": "PayPal ne podržava ovu valutu za jedan od uključenih naloga.",
+  "errTransactionRefused": "PayPal je odbio ovu transakciju. Uplata nije naplaćena.",
+  "calendarEmpty": "Još nemate rezervacija.\nDodirnite dan da vidite detalje.",
+  "payNow": "Plati",
   "reservationConfirmed": "Rezervacija potvrđena",
   "coveredByPackageBody": "Trening „{name}\" je pokriven vašim mjesečnim paketom, pa nema šta da se plati.\n\nPotrošen je jedan termin iz paketa.",
   "nothingToPayTitle": "Nema šta da se plati",

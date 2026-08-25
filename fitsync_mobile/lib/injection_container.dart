@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'features/payments/domain/usecases/get_payment_for_reservation.dart';
 import 'features/help/data/datasources/help_remote_data_source.dart';
 import 'features/help/presentation/providers/help_provider.dart';
 import 'features/memberships/domain/usecases/cancel_membership.dart';
@@ -171,7 +172,10 @@ Future<void> init() async {
   sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<NotificationsRemoteDataSource>(() => NotificationsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
 
+  sl.registerLazySingleton(() => GetPaymentForReservation(sl()));
+
   sl.registerFactory(() => PaymentsProvider(
+        getPaymentForReservation: sl(),
     createPayPalOrder: sl(),
     capturePayPalOrder: sl(),
     selectCashPayment: sl(),

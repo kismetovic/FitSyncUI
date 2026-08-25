@@ -226,7 +226,7 @@ class ReservationConfirmPage extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (_) => ReservationPaymentPage(
-          training: training,
+          trainingName: training.name,
           reservationId: reservation.id,
           // The amount comes from the reservation the server just created, which
           // already includes additional services and any out-of-hours surcharge.

@@ -98,6 +98,42 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.'**
+  String get errComplianceViolation;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'The gym PayPal account cannot accept this payment right now.'**
+  String get errPayeeRestricted;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal does not support this currency for one of the accounts involved.'**
+  String get errCurrencyNotSupported;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken.'**
+  String get errTransactionRefused;
+
+  /// Calendar empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No reservations yet.\nTap a day to see details.'**
+  String get calendarEmpty;
+
+  /// Pay an unpaid reservation from the bookings list
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get payNow;
+
   /// Booking covered by a monthly package
   ///
   /// In en, this message translates to:

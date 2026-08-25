@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'reservation_payment_page.dart';
 import '../../../../../core/error/api_error_messages.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -59,6 +60,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
                               itemBuilder: (context, i) => _ReservationCard(
                                 reservation: provider.reservations[i],
                                 onCancel: (r) => _confirmCancel(context, provider, r),
+                                onPay: (r) => _openPayment(context, r),
                               ),
                             ),
                 ),
@@ -71,6 +73,30 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
   }
 
   /// Cancelling requires a reason, which is stored on the reservation together with
+  /// Opens the payment screen for a reservation that has not been paid yet.
+  ///
+  /// The screen used to be reachable only in the moments right after booking, so a
+  /// client who closed it - or whose PayPal approval did not go through - had no way
+  /// to pay from the app at all, and the booking could only be settled by staff
+  /// recording it as cash.
+  Future<void> _openPayment(BuildContext context, Reservation reservation) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReservationPaymentPage(
+          trainingName: reservation.trainingName ?? '',
+          reservationId: reservation.id,
+          totalAmount: reservation.totalPrice,
+        ),
+      ),
+    );
+
+    // Whatever happened over there, the list may be out of date now.
+    if (context.mounted) {
+      await context.read<ReservationsProvider>().loadReservations();
+    }
+  }
+
   /// who cancelled it and when. The reservation stays in the list as cancelled rather
   /// than disappearing, so the history remains complete.
   void _confirmCancel(BuildContext context, ReservationsProvider provider, Reservation r) {
@@ -157,8 +183,13 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
 class _ReservationCard extends StatelessWidget {
   final Reservation reservation;
   final void Function(Reservation) onCancel;
+  final void Function(Reservation) onPay;
 
-  const _ReservationCard({required this.reservation, required this.onCancel});
+  const _ReservationCard({
+    required this.reservation,
+    required this.onCancel,
+    required this.onPay,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -241,19 +272,42 @@ class _ReservationCard extends StatelessWidget {
           if (reservation.status != ReservationStatus.cancelled &&
               reservation.status != ReservationStatus.completed) ...[
             SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton.icon(
-                icon: Icon(Icons.cancel, size: 16),
-                label: Text(AppLocalizations.of(context).cancel),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Until now the payment screen was reachable only in the moments right
+                // after booking. Leaving it meant the reservation could never be paid
+                // from the app again - the only way out was asking staff to record it
+                // as cash. A booking the package covers has nothing to pay, so it gets
+                // no button.
+                if (!reservation.isPaid && reservation.totalPrice > 0) ...[
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.payment, size: 16),
+                    label: Text(AppLocalizations.of(context).payNow),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8622A),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => onPay(reservation),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                OutlinedButton.icon(
+                  icon: Icon(Icons.cancel, size: 16),
+                  label: Text(AppLocalizations.of(context).cancel),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: () => onCancel(reservation),
                 ),
-                onPressed: () => onCancel(reservation),
-              ),
+              ],
             ),
           ],
         ],

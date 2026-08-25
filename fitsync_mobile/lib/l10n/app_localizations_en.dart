@@ -9,6 +9,28 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get errComplianceViolation =>
+      'PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.';
+
+  @override
+  String get errPayeeRestricted =>
+      'The gym PayPal account cannot accept this payment right now.';
+
+  @override
+  String get errCurrencyNotSupported =>
+      'PayPal does not support this currency for one of the accounts involved.';
+
+  @override
+  String get errTransactionRefused =>
+      'PayPal refused this transaction. The payment was not taken.';
+
+  @override
+  String get calendarEmpty => 'No reservations yet.\nTap a day to see details.';
+
+  @override
+  String get payNow => 'Pay now';
+
+  @override
   String get reservationConfirmed => 'Reservation confirmed';
 
   @override

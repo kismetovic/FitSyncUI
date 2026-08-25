@@ -1,4 +1,28 @@
 {
+  "errComplianceViolation": "PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.",
+  "@errComplianceViolation": {
+    "description": "PayPal refusal codes"
+  },
+  "errPayeeRestricted": "The gym PayPal account cannot accept this payment right now.",
+  "@errPayeeRestricted": {
+    "description": "PayPal refusal codes"
+  },
+  "errCurrencyNotSupported": "PayPal does not support this currency for one of the accounts involved.",
+  "@errCurrencyNotSupported": {
+    "description": "PayPal refusal codes"
+  },
+  "errTransactionRefused": "PayPal refused this transaction. The payment was not taken.",
+  "@errTransactionRefused": {
+    "description": "PayPal refusal codes"
+  },
+  "calendarEmpty": "No reservations yet.\nTap a day to see details.",
+  "@calendarEmpty": {
+    "description": "Calendar empty state"
+  },
+  "payNow": "Pay now",
+  "@payNow": {
+    "description": "Pay an unpaid reservation from the bookings list"
+  },
   "reservationConfirmed": "Reservation confirmed",
   "@reservationConfirmed": {
     "description": "Booking covered by a monthly package"

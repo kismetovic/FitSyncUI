@@ -9,6 +9,29 @@ class AppLocalizationsBs extends AppLocalizations {
   AppLocalizationsBs([String locale = 'bs']) : super(locale);
 
   @override
+  String get errComplianceViolation =>
+      'PayPal je odbio ovu transakciju. Uplata nije naplaćena. Pokušajte drugim načinom plaćanja ili nas kontaktirajte.';
+
+  @override
+  String get errPayeeRestricted =>
+      'PayPal nalog teretane trenutno ne može primiti ovu uplatu.';
+
+  @override
+  String get errCurrencyNotSupported =>
+      'PayPal ne podržava ovu valutu za jedan od uključenih naloga.';
+
+  @override
+  String get errTransactionRefused =>
+      'PayPal je odbio ovu transakciju. Uplata nije naplaćena.';
+
+  @override
+  String get calendarEmpty =>
+      'Još nemate rezervacija.\nDodirnite dan da vidite detalje.';
+
+  @override
+  String get payNow => 'Plati';
+
+  @override
   String get reservationConfirmed => 'Rezervacija potvrđena';
 
   @override

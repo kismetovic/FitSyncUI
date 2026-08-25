@@ -1,4 +1,20 @@
 {
+  "errComplianceViolation": "PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.",
+  "@errComplianceViolation": {
+    "description": "PayPal refusal codes"
+  },
+  "errPayeeRestricted": "The gym PayPal account cannot accept this payment right now.",
+  "@errPayeeRestricted": {
+    "description": "PayPal refusal codes"
+  },
+  "errCurrencyNotSupported": "PayPal does not support this currency for one of the accounts involved.",
+  "@errCurrencyNotSupported": {
+    "description": "PayPal refusal codes"
+  },
+  "errTransactionRefused": "PayPal refused this transaction. The payment was not taken.",
+  "@errTransactionRefused": {
+    "description": "PayPal refusal codes"
+  },
   "errMembershipOverlap": "The client already has a package covering the same trainings.",
   "@errMembershipOverlap": {
     "description": "Package business rules"

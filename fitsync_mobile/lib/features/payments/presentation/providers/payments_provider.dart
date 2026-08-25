@@ -5,6 +5,7 @@ import '../../domain/entities/paypal_order.dart';
 import '../../domain/usecases/capture_paypal_order.dart';
 import '../../domain/usecases/create_paypal_order.dart';
 import '../../domain/usecases/get_my_payments.dart';
+import '../../domain/usecases/get_payment_for_reservation.dart';
 import '../../domain/usecases/select_cash_payment.dart';
 
 /// Stages of the PayPal checkout, so the UI can guide the user through the real
@@ -30,12 +31,14 @@ class PaymentsProvider extends ChangeNotifier {
   final CapturePayPalOrder capturePayPalOrder;
   final SelectCashPayment selectCashPayment;
   final GetMyPayments getMyPayments;
+  final GetPaymentForReservation getPaymentForReservation;
 
   PaymentsProvider({
     required this.createPayPalOrder,
     required this.capturePayPalOrder,
     required this.selectCashPayment,
     required this.getMyPayments,
+    required this.getPaymentForReservation,
   });
 
   bool _isLoading = false;
@@ -232,5 +235,72 @@ class PaymentsProvider extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  /// Picks up a PayPal order that was opened for this reservation but never
+  /// settled, and asks the server to finish it.
+  ///
+  /// Without this, an order the client approved at PayPal but whose capture the
+  /// app never requested - because it was killed in the background, or the user
+  /// simply never came back to the screen - would sit Pending forever. The money
+  /// would be authorised at PayPal while FitSync showed the booking as unpaid,
+  /// and the only way out was staff recording it as cash.
+  ///
+  /// Returns true when the payment ends up captured. A still-unapproved order is
+  /// not an error: it just means there is nothing to settle yet.
+  Future<bool> resumePendingPayPal(int reservationId) async {
+    // A capture already in flight must not be doubled up on.
+    if (_stage == PayPalStage.capturing || _stage == PayPalStage.creatingOrder) {
+      return false;
+    }
+
+    // The provider outlives the screen, so it may already be tracking an order.
+    // For this same booking that is exactly what needs settling; for a different
+    // one it is stale and must not leak across.
+    if (_order != null) {
+      if (_order!.reservationId == reservationId) {
+        if (_stage == PayPalStage.completed) return false;
+        return completePayPalCheckout(silent: true);
+      }
+      _order = null;
+      _stage = PayPalStage.idle;
+    }
+
+    final result = await getPaymentForReservation(reservationId);
+
+    final pending = result.fold<Payment?>((_) => null, (payment) {
+      if (payment == null) return null;
+      final unfinished = payment.paymentProvider == PaymentProvider.paypal &&
+          payment.status == PaymentStatus.pending &&
+          (payment.providerOrderId ?? '').isNotEmpty;
+      return unfinished ? payment : null;
+    });
+
+    if (pending == null) return false;
+
+    // Rebuild just enough state for the capture call; the approval url is not
+    // needed because the client is not being sent back to PayPal here.
+    _order = PayPalOrder(
+      orderId: pending.providerOrderId!,
+      approvalUrl: '',
+      amount: pending.amount,
+      currency: pending.currency,
+      // The euro figure only matters when sending the client to PayPal, which
+      // is not what this path does - the order already exists there.
+      chargedAmount: pending.amount,
+      chargedCurrency: pending.currency,
+      reservationId: reservationId,
+    );
+    _stage = PayPalStage.awaitingApproval;
+
+    // One quiet attempt. If PayPal says it was never approved, nothing is shown.
+    final captured = await completePayPalCheckout(silent: true);
+    if (!captured) {
+      _stage = PayPalStage.idle;
+      _order = null;
+      _notApprovedYet = false;
+      notifyListeners();
+    }
+    return captured;
   }
 }

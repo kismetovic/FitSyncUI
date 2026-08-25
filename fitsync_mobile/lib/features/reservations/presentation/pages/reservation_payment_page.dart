@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fitsync_mobile/l10n/app_localizations.dart';
 import '../../../../../core/error/api_error_messages.dart';
 import 'package:provider/provider.dart';
-import '../../../../features/trainings/domain/entities/training.dart';
 import '../../../payments/presentation/providers/payments_provider.dart';
 import '../../../../core/utils/money.dart';
 
@@ -12,13 +11,16 @@ import '../../../../core/utils/money.dart';
 /// the user approves it on PayPal's own page in the browser, and the backend then
 /// captures and verifies it. The app deliberately never asks for a PayPal password.
 class ReservationPaymentPage extends StatefulWidget {
-  final Training training;
+  /// Only the name is needed here, and taking a string rather than the whole
+  /// entity lets the screen be opened from the bookings list too, where the
+  /// reservation carries the name but not a Training object.
+  final String trainingName;
   final int reservationId;
   final double totalAmount;
 
   const ReservationPaymentPage({
     super.key,
-    required this.training,
+    required this.trainingName,
     required this.reservationId,
     required this.totalAmount,
   });
@@ -41,6 +43,26 @@ class _ReservationPaymentPageState extends State<ReservationPaymentPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // The screen may be opened for a booking whose PayPal order was started
+    // earlier and never settled - the app was killed in the background, or the
+    // client simply never came back. Ask the server to finish it before showing
+    // payment options for something that may already be paid at PayPal.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<PaymentsProvider>();
+      final settled = await provider.resumePendingPayPal(widget.reservationId);
+      if (!settled || !mounted) return;
+
+      final capture = provider.lastCapture;
+      _showResultDialog(
+        title: 'Uplata evidentirana',
+        message: 'Ranije započeto plaćanje na PayPal-u je dovršeno i provjereno: '
+            '${formatMoney(capture?.amount ?? 0, currency: capture?.currency ?? "EUR")}.'
+            '\n\nRezervacija za "${widget.trainingName}" je potvrđena.',
+        icon: Icons.check_circle,
+        color: const Color(0xFF27AE60),
+      );
+    });
   }
 
   @override
@@ -77,7 +99,7 @@ class _ReservationPaymentPageState extends State<ReservationPaymentPage>
       title: 'Uplata evidentirana',
       message: 'Server je potvrdio uplatu od '
           '${formatMoney(capture?.amount ?? 0, currency: capture?.currency ?? 'EUR')}.'
-          '\n\nRezervacija za "${widget.training.name}" je potvrđena.',
+          '\n\nRezervacija za "${widget.trainingName}" je potvrđena.',
       icon: Icons.check_circle,
       color: const Color(0xFF27AE60),
     );
@@ -88,7 +110,7 @@ class _ReservationPaymentPageState extends State<ReservationPaymentPage>
     // Belt and braces. The confirmation screen already skips this page when a package
     // covers the booking, but nothing should ever offer to charge 0.00 BAM - and the
     // server would refuse such an order with NOTHING_TO_PAY.
-    if (widget.totalAmount <= 0) return _NothingToPay(training: widget.training.name);
+    if (widget.totalAmount <= 0) return _NothingToPay(training: widget.trainingName);
 
     return Consumer<PaymentsProvider>(
       builder: (context, provider, _) {
@@ -111,7 +133,7 @@ class _ReservationPaymentPageState extends State<ReservationPaymentPage>
                   style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                _AmountSummary(training: widget.training.name, amount: widget.totalAmount),
+                _AmountSummary(training: widget.trainingName, amount: widget.totalAmount),
                 const SizedBox(height: 24),
 
                 _PaymentOption(
@@ -214,7 +236,7 @@ class _ReservationPaymentPageState extends State<ReservationPaymentPage>
     if (!mounted || payment == null) return;
     _showResultDialog(
       title: 'Rezervacija zabilježena',
-      message: 'Vaša rezervacija za "${widget.training.name}" je kreirana.\n\n'
+      message: 'Vaša rezervacija za "${widget.trainingName}" je kreirana.\n\n'
           'Uplatu izvršite pri dolasku. Rezervacija će biti potvrđena kada osoblje '
           'evidentira uplatu.',
       icon: Icons.event_available,

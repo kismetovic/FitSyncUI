@@ -30,6 +30,21 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Where PayPal sends the browser once the client approves or cancels.
+                 The activity is singleTop, so this brings the existing screen back to
+                 the foreground rather than starting a second copy - which is exactly
+                 what the payment screen listens for: coming back is the signal to ask
+                 the server to capture and verify. Nothing parses the link itself.
+
+                 Before this, PayPal redirected to a placeholder web page, so the client
+                 was left in the browser and the capture was never requested. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="fitsync" android:host="paypal"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

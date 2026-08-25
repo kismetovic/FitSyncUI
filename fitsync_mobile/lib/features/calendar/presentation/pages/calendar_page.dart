@@ -254,7 +254,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             child: provider.reservations.isEmpty
                                 ? Center(
                                     child: Text(
-                                      'No reservations yet.\nTap a day to see details.',
+                                      AppLocalizations.of(context).calendarEmpty,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(color: Colors.grey[600]),
                                     ),

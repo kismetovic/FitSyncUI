@@ -54,6 +54,14 @@ String apiErrorText(BuildContext context, String? code, [String? serverMessage])
       return l.errInstrumentDeclined;
     case 'PAYER_ACTION_REQUIRED':
       return l.errPayerActionRequired;
+    case 'COMPLIANCE_VIOLATION':
+      return l.errComplianceViolation;
+    case 'PAYEE_ACCOUNT_RESTRICTED':
+      return l.errPayeeRestricted;
+    case 'CURRENCY_NOT_SUPPORTED':
+      return l.errCurrencyNotSupported;
+    case 'TRANSACTION_REFUSED':
+      return l.errTransactionRefused;
     case 'TRAINING_NOT_ATTENDED':
       return l.errTrainingNotAttended;
     case 'ALREADY_REVIEWED':
