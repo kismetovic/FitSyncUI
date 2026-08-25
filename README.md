@@ -5,7 +5,23 @@ Flutter aplikacije za FITSync sistem upravljanja treninzima.
 - **fitsync_mobile** — Mobilna aplikacija za klijente (Android/iOS)
 - **fitsync_desktop** — Desktop admin aplikacija (Windows/macOS/Linux)
 
-Obje aplikacije se povezuju na [FITSync API](../FitSyncAPI/README.md).
+Obje aplikacije se povezuju na [FITSync API](../FitSyncAPI/README.md) i startaju na
+**bosanskom** jeziku, uz engleski kao drugu opciju.
+
+| | Mobilna | Desktop |
+|---|---|---|
+| Ko je koristi | Klijent teretane | Administrator |
+| Prijava | Bilo koji aktivan nalog | **Samo administrator** — klijent dobija „Pristup nije dozvoljen" |
+| Šta radi | Pregled i pretraga treninga, rezervacije, mjesečni paketi, plaćanje (PayPal ili gotovina), recenzije, kalendar, notifikacije, pomoć i podrška | Treninzi, tipovi treninga, dodatne usluge, rezervacije, klijenti, osoblje (treneri i administratori), recenzije, uplate, mjesečni paketi, PDF izvještaji, uređivanje čestih pitanja i kontakta |
+
+Podaci za prijavu su isti u obje aplikacije:
+
+| Uloga | Email | Lozinka |
+|---|---|---|
+| Administrator | `fitsync@gmail.com` | `Admin123!` |
+| Klijent | `user@fitsync.com` | `User123!` |
+
+Polje za prijavu je `userNameOrEmail`, pa radi i korisničko ime i email.
 
 ---
 
@@ -93,6 +109,15 @@ flutter build apk --release
 # Izlaz: build/app/outputs/flutter-apk/app-release.apk
 ```
 
+**Testirati i release build, barem jednom.** Debug build je popustljiviji od release
+builda: Flutter dodaje `INTERNET` dozvolu samo u debug i profile manifest, Android od
+API 28 blokira nešifrovani HTTP, a `url_launcher` od Androida 11 ne vidi preglednik bez
+`<queries>` zapisa. Sve troje je riješeno u `android/app/src/main/AndroidManifest.xml` i
+`res/xml/network_security_config.xml`, ali se vidi tek u release buildu.
+
+Ako release build javi da ne može doći do servera, a `curl http://localhost:5000/api/Trainings`
+radi — problem je u manifestu, ne u API-ju.
+
 ### Lokalizacija
 
 Aplikacija podržava **engleski (en)** i **bosanski (bs)** jezik. Podrazumijevani jezik je bosanski.
@@ -111,6 +136,15 @@ flutter gen-l10n
 # ili jednostavno:
 flutter pub get
 ```
+
+### Testovi
+
+```bash
+flutter test
+```
+
+Obje aplikacije imaju testove i oba paketa moraju proći. Pokriveni su formatiranje
+iznosa (uvijek KM, nikad `$`) i prevođenje grešaka sa API-ja u jezik korisnika.
 
 ---
 
@@ -151,8 +185,12 @@ flutter build windows --release
 
 | Polje | Vrijednost |
 |-------|------------|
-| Korisničko ime | `user@fitsync.com` |
-| Lozinka | `User123!` |
+| Korisničko ime | `fitsync@gmail.com` |
+| Lozinka | `Admin123!` |
+
+> Desktop je admin aplikacija. Prijava klijentskim nalogom (`user@fitsync.com`) namjerno
+> ne otvara admin shell nego poruku „Pristup nije dozvoljen" — backend svakako odbija
+> admin endpointe, ali ni UI ih ne nudi korisniku koji nema tu ulogu.
 
 ### Lokalizacija
 
