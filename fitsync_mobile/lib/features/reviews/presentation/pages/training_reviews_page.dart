@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/error/api_error_messages.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../../features/trainings/domain/entities/training.dart';
+import '../../../reservations/domain/entities/reservation.dart';
+import '../../../reservations/presentation/providers/reservations_provider.dart';
 import '../providers/reviews_provider.dart';
+import 'package:fitsync_mobile/l10n/app_localizations.dart';
 
 class TrainingReviewsPage extends StatefulWidget {
   final Training training;
@@ -31,13 +35,13 @@ class _TrainingReviewsPageState extends State<TrainingReviewsPage> {
           appBar: AppBar(
             backgroundColor: const Color(0xFF152030),
             foregroundColor: Colors.white,
-            title: Text('Reviews – ${widget.training.name}'),
+            title: Text(AppLocalizations.of(context).reviewsFor(widget.training.name)),
             elevation: 0,
             actions: [
               IconButton(
-                icon: const Icon(Icons.rate_review),
+                icon: Icon(Icons.rate_review),
                 onPressed: () => _showReviewDialog(context, provider),
-                tooltip: 'Leave a review',
+                tooltip: AppLocalizations.of(context).leaveReview,
               ),
             ],
           ),
@@ -56,13 +60,41 @@ class _TrainingReviewsPageState extends State<TrainingReviewsPage> {
     );
   }
 
+  /// The user's own completed reservation for this training, if there is one.
+  /// Only such a reservation can be reviewed, so the form is offered only when one
+  /// exists. The backend re-checks this independently.
+  Reservation? _findReviewableReservation(BuildContext context) {
+    final reservations = context.read<ReservationsProvider>().reservations;
+    for (final reservation in reservations) {
+      if (reservation.trainingId == widget.training.id && reservation.canBeReviewed) {
+        return reservation;
+      }
+    }
+    return null;
+  }
+
   void _showReviewDialog(BuildContext context, ReviewsProvider provider) {
+    final reservation = _findReviewableReservation(context);
+
+    if (reservation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Recenziju možete ostaviti tek nakon što odradite ovaj trening '
+            'i uplata bude evidentirana.',
+          ),
+          duration: Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _ReviewForm(
-        trainingId: widget.training.id,
+        reservationId: reservation.id,
         provider: provider,
       ),
     );
@@ -129,10 +161,13 @@ class _ReviewCard extends StatelessWidget {
 }
 
 class _ReviewForm extends StatefulWidget {
-  final int trainingId;
+  /// The attended reservation being reviewed. The backend derives the training and
+  /// the author from it, so a review can never be written for someone else or for a
+  /// session the user did not attend.
+  final int reservationId;
   final ReviewsProvider provider;
 
-  const _ReviewForm({required this.trainingId, required this.provider});
+  const _ReviewForm({required this.reservationId, required this.provider});
 
   @override
   State<_ReviewForm> createState() => _ReviewFormState();
@@ -164,17 +199,17 @@ class _ReviewFormState extends State<_ReviewForm> {
           children: [
             Row(
               children: [
-                const Text('Leave a Review',
+                Text(AppLocalizations.of(context).leaveReview,
                     style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54),
+                  icon: Icon(Icons.close, color: Colors.white54),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text('Rating', style: TextStyle(color: Colors.white70, fontSize: 13)),
+            SizedBox(height: 16),
+            Text(AppLocalizations.of(context).rating, style: TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 8),
             Row(
               children: List.generate(5, (i) => GestureDetector(
@@ -189,13 +224,13 @@ class _ReviewFormState extends State<_ReviewForm> {
                 ),
               )),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             TextField(
               controller: _commentController,
               maxLines: 3,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Share your experience (optional)...',
+                hintText: AppLocalizations.of(context).shareExperience,
                 hintStyle: TextStyle(color: Colors.grey[500]),
                 filled: true,
                 fillColor: const Color(0xFF243347),
@@ -209,7 +244,7 @@ class _ReviewFormState extends State<_ReviewForm> {
             if (widget.provider.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text(widget.provider.error!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                child: Text(apiErrorText(context, widget.provider.errorCode, widget.provider.error), style: const TextStyle(color: Colors.red, fontSize: 12)),
               ),
             SizedBox(
               width: double.infinity,
@@ -222,8 +257,8 @@ class _ReviewFormState extends State<_ReviewForm> {
                 ),
                 onPressed: widget.provider.submitting ? null : _submit,
                 child: widget.provider.submitting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Submit Review', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(AppLocalizations.of(context).submitReview, style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -234,7 +269,7 @@ class _ReviewFormState extends State<_ReviewForm> {
 
   Future<void> _submit() async {
     final ok = await widget.provider.submitReview(
-      trainingId: widget.trainingId,
+      reservationId: widget.reservationId,
       rating: _rating,
       comment: _commentController.text.trim().isEmpty ? null : _commentController.text.trim(),
     );
@@ -250,14 +285,14 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Icon(Icons.star_border, color: Colors.grey[700], size: 64),
-      const SizedBox(height: 16),
-      Text('No reviews yet', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
-      const SizedBox(height: 8),
-      Text('Be the first to leave a review!', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-      const SizedBox(height: 20),
+      SizedBox(height: 16),
+      Text(AppLocalizations.of(context).noReviewsYet, style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+      SizedBox(height: 8),
+      Text(AppLocalizations.of(context).beFirstToReview, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+      SizedBox(height: 20),
       ElevatedButton.icon(
-        icon: const Icon(Icons.rate_review),
-        label: const Text('Write Review'),
+        icon: Icon(Icons.rate_review),
+        label: Text(AppLocalizations.of(context).writeReview),
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8622A), foregroundColor: Colors.white),
         onPressed: onAddReview,
       ),

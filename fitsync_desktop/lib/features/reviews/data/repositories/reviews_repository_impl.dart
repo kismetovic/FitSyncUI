@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/review.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../domain/repositories/reviews_repository.dart';
 import '../datasources/reviews_remote_data_source.dart';
 
@@ -10,10 +11,20 @@ class ReviewsRepositoryImpl implements ReviewsRepository {
   ReviewsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<Review>>> getReviews() async {
+  Future<Either<Failure, PagedResult<Review>>> getReviews({
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+    String? query,
+  }) async {
     try {
-      final reviews = await remoteDataSource.getReviews();
-      return Right(reviews);
+      final result = await remoteDataSource.getReviews(
+          page: page, pageSize: pageSize, query: query);
+      return Right(PagedResult<Review>(
+        items: result.items,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalCount: result.totalCount,
+      ));
     } on ServerFailure catch (e) {
       return Left(e);
     } catch (e) {

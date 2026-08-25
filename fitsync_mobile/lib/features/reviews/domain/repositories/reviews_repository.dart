@@ -4,8 +4,9 @@ import '../entities/review.dart';
 
 abstract class ReviewsRepository {
   Future<Either<Failure, List<Review>>> getTrainingReviews(int trainingId);
+  Future<List<Review>> getMyReviews();
   Future<Either<Failure, Review>> createReview({
-    required int trainingId,
+    required int reservationId,
     required int rating,
     String? comment,
   });

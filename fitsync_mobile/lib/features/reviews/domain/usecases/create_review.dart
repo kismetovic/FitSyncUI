@@ -6,14 +6,16 @@ import '../entities/review.dart';
 import '../repositories/reviews_repository.dart';
 
 class CreateReviewParams extends Equatable {
-  final int trainingId;
+  /// The attended reservation being reviewed. The backend derives the training and
+  /// the author from it, so neither can be spoofed.
+  final int reservationId;
   final int rating;
   final String? comment;
 
-  const CreateReviewParams({required this.trainingId, required this.rating, this.comment});
+  const CreateReviewParams({required this.reservationId, required this.rating, this.comment});
 
   @override
-  List<Object?> get props => [trainingId, rating, comment];
+  List<Object?> get props => [reservationId, rating, comment];
 }
 
 class CreateReview implements UseCase<Review, CreateReviewParams> {
@@ -22,11 +24,9 @@ class CreateReview implements UseCase<Review, CreateReviewParams> {
   CreateReview(this.repository);
 
   @override
-  Future<Either<Failure, Review>> call(CreateReviewParams params) async {
-    return await repository.createReview(
-      trainingId: params.trainingId,
-      rating: params.rating,
-      comment: params.comment,
-    );
-  }
+  Future<Either<Failure, Review>> call(CreateReviewParams params) => repository.createReview(
+        reservationId: params.reservationId,
+        rating: params.rating,
+        comment: params.comment,
+      );
 }

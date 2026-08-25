@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
+import '../../../../core/error/dio_failure.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/error/failures.dart';
 import '../../../auth/data/datasources/auth_local_data_source.dart';
 import '../models/review_model.dart';
+import '../../../../core/pagination/paged_result.dart';
 
 abstract class ReviewsRemoteDataSource {
-  Future<List<ReviewModel>> getReviews();
+  /// One page of reviews from the paged search endpoint (review item 22).
+  Future<PagedResult<ReviewModel>> getReviews({int page, int pageSize, String? query});
   Future<void> deleteReview(int id);
 }
 
@@ -17,19 +20,28 @@ class ReviewsRemoteDataSourceImpl implements ReviewsRemoteDataSource {
   ReviewsRemoteDataSourceImpl({required this.dio, required this.localDataSource});
 
   @override
-  Future<List<ReviewModel>> getReviews() async {
+  Future<PagedResult<ReviewModel>> getReviews({
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+    String? query,
+  }) async {
     try {
       final token = await localDataSource.getToken();
       final response = await dio.get(
-        '$baseUrl/Reviews',
+        '$baseUrl/Reviews/search',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          if (query != null && query.isNotEmpty) 'query': query,
+        },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       if (response.statusCode == 200) {
-        return (response.data as List).map((e) => ReviewModel.fromJson(e)).toList();
+        return PagedResult.fromJson(response.data, ReviewModel.fromJson);
       }
       throw const ServerFailure('Failed to get reviews');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -45,7 +57,7 @@ class ReviewsRemoteDataSourceImpl implements ReviewsRemoteDataSource {
         throw const ServerFailure('Failed to delete review');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 }
