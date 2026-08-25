@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../features/staff/presentation/pages/staff_page.dart';
+import '../../../features/help/presentation/pages/help_content_page.dart';
+import '../../../features/help/presentation/providers/help_content_provider.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +23,11 @@ import '../../../features/additional_services/presentation/pages/additional_serv
 import '../../../features/additional_services/presentation/providers/additional_services_provider.dart';
 import '../../../features/payments/presentation/pages/payments_page.dart';
 import '../../../features/payments/presentation/providers/payments_provider.dart';
+import '../../../features/reports/presentation/pages/reports_page.dart';
+import '../../../features/reports/presentation/providers/reports_provider.dart';
+import '../../../features/memberships/presentation/pages/memberships_page.dart';
+import '../../../features/memberships/presentation/providers/memberships_provider.dart';
+import '../../../features/trainers/presentation/providers/trainers_provider.dart';
 import '../../../injection_container.dart' as di;
 
 class MainShellPage extends StatefulWidget {
@@ -35,9 +43,9 @@ class _MainShellPageState extends State<MainShellPage> {
   void _onTabSelected(BuildContext innerContext, int index) {
     setState(() => _selectedIndex = index);
     switch (index) {
-      case 0:
-        innerContext.read<DashboardProvider>().loadStats();
-        innerContext.read<AdminPaymentsProvider>().load();
+      // The dashboard gets its revenue total from /Dashboard/stats, so it no
+      // longer needs the whole payment table loaded alongside it.
+      case 0: innerContext.read<DashboardProvider>().loadStats();
       case 1: innerContext.read<TrainingsProvider>().loadTrainings();
       case 2: innerContext.read<TrainingTypesProvider>().load();
       case 3: innerContext.read<AdditionalServicesProvider>().load();
@@ -45,12 +53,15 @@ class _MainShellPageState extends State<MainShellPage> {
       case 5: innerContext.read<UsersProvider>().loadUsers();
       case 6: innerContext.read<ReviewsProvider>().loadReviews();
       case 7: innerContext.read<AdminPaymentsProvider>().load();
+      case 8: innerContext.read<TrainersProvider>().load();
+      case 9: innerContext.read<MembershipsProvider>().load();
+      // 8 (staff) and 11 (help) load their own data from their own providers.
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final navItems = [
       _NavItem(icon: Icons.dashboard, label: l.navDashboard),
       _NavItem(icon: Icons.fitness_center, label: l.navTrainings),
@@ -60,6 +71,10 @@ class _MainShellPageState extends State<MainShellPage> {
       _NavItem(icon: Icons.people, label: l.navClients),
       _NavItem(icon: Icons.star, label: l.navReviews),
       _NavItem(icon: Icons.receipt_long, label: l.navPayments),
+      _NavItem(icon: Icons.badge_outlined, label: l.navStaff),
+      _NavItem(icon: Icons.card_membership, label: l.navMonthlyPackages),
+      _NavItem(icon: Icons.picture_as_pdf, label: l.navReports),
+      _NavItem(icon: Icons.help_outline, label: l.navHelp),
     ];
 
     final user = context.watch<AuthProvider>().user;
@@ -75,6 +90,10 @@ class _MainShellPageState extends State<MainShellPage> {
         ChangeNotifierProvider(create: (_) => di.sl<UsersProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<ReviewsProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<AdminPaymentsProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<ReportsProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<MembershipsProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<HelpContentProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<TrainersProvider>()),
       ],
       child: ChangeNotifierProvider.value(
         value: context.read<LocaleProvider>(),
@@ -102,9 +121,13 @@ class _MainShellPageState extends State<MainShellPage> {
                       TrainingTypesPage(),
                       AdditionalServicesPage(),
                       ReservationsPage(),
-                      UsersPage(),
+                      UsersPage(role: 'Client'),
                       ReviewsPage(),
                       PaymentsPage(),
+                      StaffPage(),
+                      MembershipsPage(),
+                      ReportsPage(),
+                      HelpContentPage(),
                     ],
                   ),
                 ),
@@ -232,7 +255,7 @@ class _Sidebar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Consumer<LocaleProvider>(
               builder: (context, localeProvider, _) {
-                final l = AppLocalizations.of(context)!;
+                final l = AppLocalizations.of(context);
                 return Material(
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
