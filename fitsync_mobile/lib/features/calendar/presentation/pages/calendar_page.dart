@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../reservations/domain/entities/reservation.dart';
 import '../../../reservations/domain/entities/reservation_status.dart';
 import '../../../reservations/presentation/providers/reservations_provider.dart';
+import 'package:fitsync_mobile/l10n/app_localizations.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -75,8 +76,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Row(
                     children: [
-                      const Text(
-                        'My Calendar',
+                      Text(
+                        AppLocalizations.of(context).myCalendar,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -102,6 +103,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     border: Border.all(color: Colors.white10),
                   ),
                   child: TableCalendar<Reservation>(
+                    // Without this the header and weekday row stay English.
+                    locale: Localizations.localeOf(context).languageCode,
                     firstDay: DateTime.utc(2024, 1, 1),
                     lastDay: DateTime.utc(2027, 12, 31),
                     focusedDay: _focusedDay,
@@ -215,7 +218,9 @@ class _CalendarPageState extends State<CalendarPage> {
                     child: selectedEvents.isEmpty
                         ? Center(
                             child: Text(
-                              'No reservations on ${DateFormat('MMMM d').format(_selectedDay!)}',
+                              AppLocalizations.of(context).noReservationsOn(
+                                  DateFormat('d MMMM', Localizations.localeOf(context).languageCode)
+                                      .format(_selectedDay!)),
                               style: TextStyle(color: Colors.grey[500]),
                             ),
                           )
@@ -236,7 +241,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Upcoming Reservations',
+                            AppLocalizations.of(context).upcomingReservations,
                             style: TextStyle(
                               color: Colors.grey[400],
                               fontSize: 13,
@@ -249,7 +254,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             child: provider.reservations.isEmpty
                                 ? Center(
                                     child: Text(
-                                      'No reservations yet.\nTap a day to see details.',
+                                      AppLocalizations.of(context).calendarEmpty,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(color: Colors.grey[600]),
                                     ),
@@ -286,11 +291,12 @@ class _CalendarPageState extends State<CalendarPage> {
 class _LegendRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (_LegendDot(color: Color(0xFF4A90D9)), 'Initial'),
-      (_LegendDot(color: Color(0xFFF39C12)), 'Pending'),
-      (_LegendDot(color: Color(0xFF27AE60)), 'Approved'),
-      (_LegendDot(color: Color(0xFF16A085)), 'Paid'),
+    final l = AppLocalizations.of(context);
+    final items = [
+      (const _LegendDot(color: Color(0xFF4A90D9)), l.statusInitial),
+      (const _LegendDot(color: Color(0xFFF39C12)), l.legendPending),
+      (const _LegendDot(color: Color(0xFF27AE60)), l.statusApproved),
+      (const _LegendDot(color: Color(0xFF16A085)), l.statusPaid),
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -332,7 +338,15 @@ class _ReservationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('HH:mm');
-    final label = reservation.status.name[0].toUpperCase() + reservation.status.name.substring(1);
+    final l = AppLocalizations.of(context);
+    final label = switch (reservation.status) {
+      ReservationStatus.initial => l.statusInitial,
+      ReservationStatus.approved => l.statusApproved,
+      ReservationStatus.paid => l.statusPaid,
+      ReservationStatus.cancelled => l.statusCancelled,
+      ReservationStatus.completed => l.statusCompleted,
+      ReservationStatus.pendingApproval => l.statusPendingApproval,
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),

@@ -3,6 +3,7 @@ import 'package:fitsync_mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/locale_provider.dart';
+import '../../../memberships/presentation/pages/memberships_page.dart';
 import '../../../payments/presentation/pages/my_payments_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/pages/change_password_page.dart';
@@ -15,7 +16,7 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final user = context.watch<AuthProvider>().user;
     final localeProvider = context.watch<LocaleProvider>();
 
@@ -68,6 +69,13 @@ class ProfilePage extends StatelessWidget {
                   icon: Icons.notifications,
                   label: l.notifications,
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsPage())),
+                ),
+                const Divider(color: Colors.white12),
+                _ActionRow(
+                  icon: Icons.card_membership,
+                  label: l.monthlyPackages,
+                  onTap: () => Navigator.push(
+                      context, MaterialPageRoute(builder: (_) => const MembershipsPage())),
                 ),
                 const Divider(color: Colors.white12),
                 _ActionRow(

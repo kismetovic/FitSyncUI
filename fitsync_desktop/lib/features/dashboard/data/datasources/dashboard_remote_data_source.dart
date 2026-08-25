@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/error/dio_failure.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../auth/data/datasources/auth_local_data_source.dart';
 import '../../../../core/error/failures.dart';
@@ -31,7 +32,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         throw const ServerFailure('Failed to get dashboard stats');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 }

@@ -12,8 +12,7 @@ class ReviewsRepositoryImpl implements ReviewsRepository {
   @override
   Future<Either<Failure, List<Review>>> getTrainingReviews(int trainingId) async {
     try {
-      final result = await remoteDataSource.getTrainingReviews(trainingId);
-      return Right(result);
+      return Right(await remoteDataSource.getTrainingReviews(trainingId));
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {
@@ -22,18 +21,26 @@ class ReviewsRepositoryImpl implements ReviewsRepository {
   }
 
   @override
+  Future<List<Review>> getMyReviews() async {
+    try {
+      return await remoteDataSource.getMyReviews();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  @override
   Future<Either<Failure, Review>> createReview({
-    required int trainingId,
+    required int reservationId,
     required int rating,
     String? comment,
   }) async {
     try {
-      final result = await remoteDataSource.createReview(
-        trainingId: trainingId,
+      return Right(await remoteDataSource.createReview(
+        reservationId: reservationId,
         rating: rating,
         comment: comment,
-      );
-      return Right(result);
+      ));
     } on Failure catch (e) {
       return Left(e);
     } catch (e) {

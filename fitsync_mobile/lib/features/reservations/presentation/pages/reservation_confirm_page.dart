@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/error/api_error_messages.dart';
 import 'package:fitsync_mobile/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,7 @@ import '../../../additional_services/domain/entities/additional_service.dart';
 import '../../domain/entities/reservation_type.dart';
 import '../providers/reservations_provider.dart';
 import 'reservation_payment_page.dart';
+import '../../../../core/utils/money.dart';
 
 class ReservationConfirmPage extends StatelessWidget {
   final Training training;
@@ -15,6 +17,12 @@ class ReservationConfirmPage extends StatelessWidget {
   final List<int> additionalServiceIds;
   final List<AdditionalService> selectedServices;
   final bool requestOutsideAvailability;
+
+  /// The monthly package this booking should be charged to, when the user
+  /// picked a monthly reservation. The server re-checks that the package
+  /// belongs to the caller, is in date and still has sessions left.
+  final int? userMembershipId;
+
   final VoidCallback? onTimeConflict;
 
   const ReservationConfirmPage({
@@ -25,16 +33,25 @@ class ReservationConfirmPage extends StatelessWidget {
     this.additionalServiceIds = const [],
     this.selectedServices = const [],
     this.requestOutsideAvailability = false,
+    this.userMembershipId,
     this.onTimeConflict,
   });
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final fmt = DateFormat('EEEE, MMM d, yyyy – HH:mm');
+    final l = AppLocalizations.of(context);
+    final fmt = DateFormat('EEEE, d. MMMM y. – HH:mm', Localizations.localeOf(context).languageCode);
     final provider = context.watch<ReservationsProvider>();
     final servicesTotal = selectedServices.fold(0.0, (sum, s) => sum + s.price);
-    final totalPrice = training.price + servicesTotal;
+
+    // A monthly booking spends a session instead of being charged, so the
+    // training itself costs nothing. Only the additional services are billed.
+    // This mirrors ReservationService, which sets the base price to 0 whenever
+    // the reservation resolves to a package.
+    final coveredByPackage =
+        reservationType == ReservationType.monthly && userMembershipId != null;
+    final basePrice = coveredByPackage ? 0.0 : training.price;
+    final totalPrice = basePrice + servicesTotal;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1923),
@@ -95,8 +112,18 @@ class ReservationConfirmPage extends StatelessWidget {
                   value: reservationType == ReservationType.oneTime ? l.oneTimeSession : l.monthlyPackage,
                 ),
                 const Divider(color: Colors.white12, height: 24),
-                _Row(icon: Icons.attach_money, label: l.basePrice,
-                    value: '\$${training.price.toStringAsFixed(2)}'),
+                _Row(icon: Icons.payments_outlined, label: l.basePrice,
+                    value: formatMoney(basePrice)),
+                if (coveredByPackage)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32, top: 6),
+                    child: Row(children: [
+                      const Icon(Icons.card_membership, color: Color(0xFF2E7D32), size: 14),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text(l.coveredByPackage,
+                          style: const TextStyle(color: Color(0xFF2E7D32), fontSize: 12))),
+                    ]),
+                  ),
                 if (selectedServices.isNotEmpty) ...[
                   const Divider(color: Colors.white12, height: 24),
                   _Row(icon: Icons.add_circle_outline, label: l.additionalServices, value: ''),
@@ -107,14 +134,14 @@ class ReservationConfirmPage extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(child: Text(s.name,
                           style: TextStyle(color: Colors.grey[300], fontSize: 13))),
-                      Text('+\$${s.price.toStringAsFixed(2)}',
+                      Text(formatMoneyDelta(s.price),
                           style: const TextStyle(color: Color(0xFF4A90D9), fontSize: 13)),
                     ]),
                   )),
                 ],
                 const Divider(color: Colors.white12, height: 24),
                 _Row(icon: Icons.receipt_long, label: l.total,
-                    value: '\$${totalPrice.toStringAsFixed(2)}',
+                    value: formatMoney(totalPrice),
                     valueColor: const Color(0xFFE8622A)),
               ]),
             ),
@@ -128,7 +155,8 @@ class ReservationConfirmPage extends StatelessWidget {
                   color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                child: Text(apiErrorText(context, provider.errorCode, provider.error),
+                    style: const TextStyle(color: Colors.red)),
               ),
               const SizedBox(height: 12),
             ],
@@ -172,28 +200,80 @@ class ReservationConfirmPage extends StatelessWidget {
       reservationType: reservationType,
       additionalServiceIds: additionalServiceIds,
       requestOutsideAvailability: requestOutsideAvailability,
+      userMembershipId: userMembershipId,
     );
 
     if (!context.mounted) return;
 
-    if (provider.error != null && provider.error!.contains('TIME_CONFLICT')) {
+    if (provider.errorCode == 'TIME_CONFLICT') {
       onTimeConflict?.call();
       if (context.mounted) Navigator.pop(context);
       return;
     }
 
-    if (reservation != null && context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ReservationPaymentPage(
-            training: training,
-            reservationId: reservation.id,
-            totalAmount: training.price + selectedServices.fold(0.0, (sum, s) => sum + s.price),
-          ),
-        ),
-      );
+    if (reservation == null || !context.mounted) return;
+
+    // A monthly booking spends a session instead of being charged, so the server
+    // priced it at zero. Sending the user to the payment screen for 0.00 BAM was
+    // pointless - and the server refuses such an order with NOTHING_TO_PAY anyway.
+    // Additional services are still billed, so the test is the total, not the type.
+    if (reservation.totalPrice <= 0) {
+      _showCoveredDialog(context);
+      return;
     }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReservationPaymentPage(
+          trainingName: training.name,
+          reservationId: reservation.id,
+          // The amount comes from the reservation the server just created, which
+          // already includes additional services and any out-of-hours surcharge.
+          // Recomputing it here would risk showing a figure the backend disagrees with.
+          totalAmount: reservation.totalPrice,
+        ),
+      ),
+    );
+  }
+
+  /// Shown instead of the payment screen when the package already covers the booking.
+  void _showCoveredDialog(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1E2A3A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.card_membership, color: Color(0xFF2E7D32), size: 64),
+            const SizedBox(height: 16),
+            Text(l.reservationConfirmed,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(l.coveredByPackageBody(training.name),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[400], height: 1.4)),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
+              onPressed: () =>
+                  Navigator.of(dialogContext).popUntil((route) => route.isFirst),
+              child: Text(l.finish, style: const TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -213,4 +293,5 @@ class _Row extends StatelessWidget {
         Text(value, style: TextStyle(color: valueColor ?? Colors.white, fontWeight: FontWeight.w600)),
     ]),
   ]);
+
 }

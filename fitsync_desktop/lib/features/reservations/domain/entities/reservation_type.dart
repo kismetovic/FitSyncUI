@@ -8,4 +8,11 @@ enum ReservationType {
     }
     return ReservationType.oneTime;
   }
+
+  /// Shown in the admin list. Printing `name` leaked the Dart identifier
+  /// ("oneTime" / "monthly") straight into a Bosnian UI.
+  String get label => switch (this) {
+        ReservationType.oneTime => 'Jednokratna',
+        ReservationType.monthly => 'Mjesečna',
+      };
 }

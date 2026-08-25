@@ -7,19 +7,36 @@ class PaymentModel extends Payment {
     required super.transactionId,
     required super.currency,
     required super.paymentProvider,
-    required super.reservationId,
+    required super.status,
+    super.reservationId,
+    super.userMembershipId,
+    super.trainingName,
+    super.membershipPackageName,
     required super.createdAt,
+    super.providerOrderId,
+    super.capturedAt,
+    super.failureReason,
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
+    final providerIndex = json['paymentProvider'] as int? ?? 0;
     return PaymentModel(
-      id: json['id'],
+      id: json['id'] ?? 0,
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       transactionId: json['transactionId'] ?? '',
-      currency: json['currency'] ?? 'USD',
-      paymentProvider: PaymentProvider.values[json['paymentProvider'] ?? 2],
-      reservationId: json['reservationId'],
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      providerOrderId: json['providerOrderId'],
+      currency: json['currency'] ?? 'BAM',
+      paymentProvider: providerIndex >= 0 && providerIndex < PaymentProvider.values.length
+          ? PaymentProvider.values[providerIndex]
+          : PaymentProvider.paypal,
+      status: PaymentStatus.fromIndex(json['status'] as int? ?? 0),
+      reservationId: json['reservationId'] as int?,
+      userMembershipId: json['userMembershipId'] as int?,
+      trainingName: json['trainingName']?.toString(),
+      membershipPackageName: json['membershipPackageName']?.toString(),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      capturedAt: DateTime.tryParse(json['capturedAt']?.toString() ?? ''),
+      failureReason: json['failureReason'],
     );
   }
 }

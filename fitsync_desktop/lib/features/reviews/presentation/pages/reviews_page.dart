@@ -1,7 +1,11 @@
+import 'dart:async';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/review.dart';
+import '../../../../core/pagination/pagination_bar.dart';
 import '../providers/reviews_provider.dart';
 
 class ReviewsPage extends StatefulWidget {
@@ -12,7 +16,21 @@ class ReviewsPage extends StatefulWidget {
 }
 
 class _ReviewsPageState extends State<ReviewsPage> {
-  String _searchQuery = '';
+  /// The filter is applied in SQL now, so keystrokes are debounced.
+  Timer? _searchDebounce;
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) context.read<ReviewsProvider>().search(value.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -24,15 +42,11 @@ class _ReviewsPageState extends State<ReviewsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Consumer<ReviewsProvider>(
       builder: (context, provider, _) {
-        final filtered = provider.reviews.where((r) {
-          final q = _searchQuery.toLowerCase();
-          return q.isEmpty ||
-              (r.userName?.toLowerCase().contains(q) ?? false) ||
-              (r.trainingName?.toLowerCase().contains(q) ?? false) ||
-              (r.comment?.toLowerCase().contains(q) ?? false);
-        }).toList();
+        // Filtering happens server-side; this list holds one page.
+        final filtered = provider.reviews;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -43,7 +57,7 @@ class _ReviewsPageState extends State<ReviewsPage> {
               children: [
                 Row(
                   children: [
-                    Text('Reviews', style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    Text(l.reviews, style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Colors.white, fontWeight: FontWeight.bold,
                     )),
                     const Spacer(),
@@ -57,20 +71,20 @@ class _ReviewsPageState extends State<ReviewsPage> {
                 TextField(
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Search reviews...',
+                    hintText: l.searchReviews,
                     hintStyle: TextStyle(color: Colors.grey[500]),
                     prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
                     filled: true,
                     fillColor: const Color(0xFF1E2A3A),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   ),
-                  onChanged: (v) => setState(() => _searchQuery = v),
+                  onChanged: _onSearchChanged,
                 ),
                 const SizedBox(height: 20),
                 if (provider.error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                    child: Text(apiErrorText(context, provider.errorCode, provider.error), style: const TextStyle(color: Colors.red)),
                   ),
                 Expanded(
                   child: provider.isLoading
@@ -82,6 +96,13 @@ class _ReviewsPageState extends State<ReviewsPage> {
                               onDelete: (r) => _confirmDelete(context, provider, r),
                             ),
                 ),
+                PaginationBar(
+                  page: provider.page,
+                  pageSize: provider.pageSize,
+                  totalCount: provider.totalCount,
+                  isLoading: provider.isLoading,
+                  onPageChanged: (p) => provider.loadReviews(page: p),
+                ),
               ],
             ),
           ),
@@ -91,24 +112,25 @@ class _ReviewsPageState extends State<ReviewsPage> {
   }
 
   void _confirmDelete(BuildContext context, ReviewsProvider provider, Review review) {
+    final l = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E2A3A),
-        title: const Text('Delete Review', style: TextStyle(color: Colors.white)),
+        title: Text(l.deleteReview, style: const TextStyle(color: Colors.white)),
         content: Text(
           'Delete review by "${review.userName}"?',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(context);
               await provider.remove(review.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(l.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -183,7 +205,7 @@ class _ReviewsList extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
                 onPressed: () => onDelete(r),
-                tooltip: 'Delete review',
+                tooltip: AppLocalizations.of(context).deleteReview,
               ),
             ],
           ),
@@ -215,7 +237,8 @@ class _EmptyState extends StatelessWidget {
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Icon(Icons.star_border, size: 64, color: Colors.grey[700]),
       const SizedBox(height: 16),
-      Text('No reviews found', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+      Text(AppLocalizations.of(context).noReviewsFound,
+          style: TextStyle(color: Colors.grey[500], fontSize: 16)),
     ]),
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/training_type.dart';
@@ -22,7 +23,7 @@ class _TrainingTypesPageState extends State<TrainingTypesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     return Consumer<TrainingTypesProvider>(
       builder: (context, provider, _) => Scaffold(
         backgroundColor: Colors.transparent,
@@ -52,7 +53,7 @@ class _TrainingTypesPageState extends State<TrainingTypesPage> {
               if (provider.error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                  child: Text(apiErrorText(context, provider.errorCode, provider.error), style: const TextStyle(color: Colors.red)),
                 ),
               Expanded(
                 child: provider.isLoading
@@ -104,7 +105,7 @@ class _TrainingTypesPageState extends State<TrainingTypesPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Otkazi')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Otkaži')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8622A)),
             onPressed: () async {
@@ -116,7 +117,7 @@ class _TrainingTypesPageState extends State<TrainingTypesPage> {
                 await provider.edit(type.id, ctrl.text.trim());
               }
             },
-            child: const Text('Sacuvaj', style: TextStyle(color: Colors.white)),
+            child: const Text('Sačuvaj', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -128,7 +129,7 @@ class _TrainingTypesPageState extends State<TrainingTypesPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E2A3A),
-        title: const Text('Obrisi vrstu treninga', style: TextStyle(color: Colors.white)),
+        title: const Text('Obriši vrstu treninga', style: TextStyle(color: Colors.white)),
         content: Text('Obrisati "${type.name}"?', style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),

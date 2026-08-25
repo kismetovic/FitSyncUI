@@ -1,16 +1,20 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/training.dart';
-import '../../domain/repositories/trainings_repository.dart';
+import '../../../../core/pagination/paged_result.dart';
+import '../entities/training.dart';
+import '../repositories/trainings_repository.dart';
 
-class GetTrainings implements UseCase<List<Training>, String?> {
+/// One page of trainings, optionally filtered by name. Both are applied by the
+/// API (review item 22).
+class GetTrainings {
   final TrainingsRepository repository;
 
   GetTrainings(this.repository);
 
-  @override
-  Future<Either<Failure, List<Training>>> call(String? searchQuery) async {
-    return await repository.getTrainings(searchQuery);
-  }
+  Future<Either<Failure, PagedResult<Training>>> call({
+    String? searchQuery,
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+  }) =>
+      repository.getTrainings(searchQuery: searchQuery, page: page, pageSize: pageSize);
 }

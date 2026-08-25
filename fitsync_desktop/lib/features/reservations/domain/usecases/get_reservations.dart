@@ -1,16 +1,22 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../domain/entities/reservation.dart';
 import '../../domain/repositories/reservations_repository.dart';
 
-class GetReservations implements UseCase<List<Reservation>, NoParams> {
+/// Fetches one page of reservations, optionally filtered by a search term.
+///
+/// Both the paging and the text match happen on the server (review item 22), so
+/// searching does not depend on how much of the table the client happens to hold.
+class GetReservations {
   final ReservationsRepository repository;
 
   GetReservations(this.repository);
 
-  @override
-  Future<Either<Failure, List<Reservation>>> call(NoParams params) async {
-    return await repository.getReservations();
-  }
+  Future<Either<Failure, PagedResult<Reservation>>> call({
+    int page = 1,
+    int pageSize = kDefaultPageSize,
+    String? query,
+  }) =>
+      repository.getReservations(page: page, pageSize: pageSize, query: query);
 }

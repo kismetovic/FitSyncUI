@@ -1,10 +1,11 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/training.dart';
 import '../../domain/entities/training_difficulty.dart';
 
 abstract class TrainingsRepository {
-  Future<Either<Failure, List<Training>>> getTrainings([String? searchQuery]);
+  Future<Either<Failure, PagedResult<Training>>> getTrainings({String? searchQuery, int page, int pageSize});
   Future<Either<Failure, Training>> createTraining({
     required String name,
     required String description,

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:fitsync_mobile/l10n/app_localizations.dart';
+import '../../../../../core/error/api_error_messages.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -21,7 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -36,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Text(l.createAccount, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 24),
                 if (authProvider.error != null)
-                  Text(authProvider.error!, style: const TextStyle(color: Colors.red)),
+                  Text(apiErrorText(context, authProvider.errorCode, authProvider.error), style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _firstNameController,

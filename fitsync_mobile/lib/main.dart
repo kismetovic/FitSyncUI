@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:fitsync_mobile/l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'features/trainings/presentation/providers/recommendations_provider.dart'
 import 'features/reservations/presentation/providers/reservations_provider.dart';
 import 'features/reviews/presentation/providers/reviews_provider.dart';
 import 'features/additional_services/presentation/providers/additional_services_provider.dart';
+import 'features/memberships/presentation/providers/memberships_provider.dart';
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/payments/presentation/providers/payments_provider.dart';
 import 'injection_container.dart' as di;
@@ -20,6 +22,10 @@ import 'injection_container.dart' as di;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
+  // DateFormat throws for a locale whose symbols were never loaded, and the app
+  // formats dates in whichever language the user picked.
+  await initializeDateFormatting('bs');
+  await initializeDateFormatting('en');
   await di.init();
   runApp(const MyApp());
 }
@@ -38,7 +44,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => di.sl<ReservationsProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<ReviewsProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<AdditionalServicesProvider>()),
-        ChangeNotifierProvider(create: (_) => di.sl<NotificationsProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<MembershipsProvider>()),
+        // Registered as a singleton in GetIt because it owns the single SignalR
+        // connection, so it is provided by value: Provider must not dispose it.
+        ChangeNotifierProvider.value(value: di.sl<NotificationsProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<PaymentsProvider>()),
       ],
       child: Consumer<LocaleProvider>(
@@ -96,8 +105,31 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _notificationsRunning = false;
+
+  /// The SignalR connection is tied to the session: it opens once the user is
+  /// authenticated and is torn down on logout, so one user never receives another
+  /// user's pushes.
+  void _syncNotificationStream(AuthProvider auth) {
+    final notifications = context.read<NotificationsProvider>();
+    final signedIn = auth.user != null;
+
+    if (signedIn && !_notificationsRunning) {
+      _notificationsRunning = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifications.start());
+    } else if (!signedIn && _notificationsRunning) {
+      _notificationsRunning = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifications.stop());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +141,9 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator(color: Color(0xFFE8622A))),
           );
         }
+
+        _syncNotificationStream(auth);
+
         if (auth.user != null) return const MainNavPage();
         return const LoginPage();
       },

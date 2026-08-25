@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 import '../../domain/entities/training.dart';
 import '../../domain/entities/training_difficulty.dart';
 import '../providers/trainings_provider.dart';
+import '../../domain/entities/recommended_training.dart';
 import '../providers/recommendations_provider.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import 'training_detail_page.dart';
+import '../../../../core/utils/money.dart';
+import 'package:fitsync_mobile/l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -72,9 +75,9 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            hintText: 'Search trainings...',
+                            hintText: AppLocalizations.of(context).searchTrainings,
                             hintStyle: TextStyle(color: Colors.grey[500]),
                             prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
                             filled: true,
@@ -128,10 +131,10 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
               child: Row(
                 children: [
-                  const Icon(Icons.star, color: Color(0xFFE8622A), size: 18),
-                  const SizedBox(width: 6),
-                  const Text(
-                    'Recommended for You',
+                  Icon(Icons.star, color: Color(0xFFE8622A), size: 18),
+                  SizedBox(width: 6),
+                  Text(
+                    AppLocalizations.of(context).recommended,
                     style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -140,7 +143,7 @@ class _HomePageState extends State<HomePage> {
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 200,
+              height: 248,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
@@ -168,7 +171,7 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               children: [
                 Text(
-                  'Available Trainings',
+                  AppLocalizations.of(context).allTrainings,
                   style: TextStyle(
                     color: Colors.grey[400],
                     fontSize: 13,
@@ -313,22 +316,22 @@ class _FilterSheet extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Text('Filters',
+                  Text(AppLocalizations.of(context).filters,
                       style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   if (provider.hasActiveFilters)
                     TextButton(
                       onPressed: provider.clearFilters,
-                      child: const Text('Clear all', style: TextStyle(color: Color(0xFFE8622A))),
+                      child: Text(AppLocalizations.of(context).clearAll, style: TextStyle(color: Color(0xFFE8622A))),
                     ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white54),
+                    icon: Icon(Icons.close, color: Colors.white54),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              const Text('Difficulty',
+              SizedBox(height: 4),
+              Text(AppLocalizations.of(context).difficulty,
                   style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Wrap(
@@ -338,7 +341,7 @@ class _FilterSheet extends StatelessWidget {
                   final color = _diffColors[d]!;
                   final selected = provider.selectedDifficulties.contains(d);
                   return FilterChip(
-                    label: Text('${d.name[0].toUpperCase()}${d.name.substring(1)}'),
+                    label: Text(d.label),
                     selected: selected,
                     onSelected: (_) => provider.toggleDifficulty(d),
                     selectedColor: color.withValues(alpha: 0.2),
@@ -351,9 +354,9 @@ class _FilterSheet extends StatelessWidget {
               ),
               if (provider.availableTypes.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text('Type',
-                    style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
+                Text(AppLocalizations.of(context).type,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+                SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -363,8 +366,8 @@ class _FilterSheet extends StatelessWidget {
                   ],
                 ),
               ],
-              const SizedBox(height: 16),
-              const Text('Sort by',
+              SizedBox(height: 16),
+              Text(AppLocalizations.of(context).sortBy,
                   style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Wrap(
@@ -396,7 +399,7 @@ class _FilterSheet extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Apply', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(AppLocalizations.of(context).apply, style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -436,7 +439,7 @@ class _Header extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'FitSync',
                 style: TextStyle(
                   color: Color(0xFFE8622A),
@@ -445,7 +448,7 @@ class _Header extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
-              Text('Find your perfect training', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+              Text(AppLocalizations.of(context).findYourTraining, style: TextStyle(color: Colors.grey[400], fontSize: 13)),
             ],
           ),
           const Spacer(),
@@ -489,13 +492,17 @@ class _Header extends StatelessWidget {
 }
 
 class _RecommendationCard extends StatelessWidget {
-  final Training training;
+  final RecommendedTraining training;
   final VoidCallback onTap;
 
   const _RecommendationCard({required this.training, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    // Review item 23: show the user why this training was recommended. The
+    // backend sends a ready-made sentence, so the card only has to render it.
+    final reason = training.reason;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -534,12 +541,12 @@ class _RecommendationCard extends StatelessWidget {
                         color: const Color(0xFFE8622A),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.star, color: Colors.white, size: 10),
                           SizedBox(width: 2),
-                          Text('Pick',
+                          Text(AppLocalizations.of(context).pick,
                               style: TextStyle(
                                   color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                         ],
@@ -565,7 +572,7 @@ class _RecommendationCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '\$${training.price.toStringAsFixed(0)}',
+                        formatMoney(training.price),
                         style: const TextStyle(
                             color: Color(0xFFE8622A), fontWeight: FontWeight.bold, fontSize: 13),
                       ),
@@ -580,6 +587,25 @@ class _RecommendationCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                  if (reason != null) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline, color: Color(0xFF4A90D9), size: 11),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            reason,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 10, height: 1.25),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -650,7 +676,7 @@ class _TrainingCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${training.price.toStringAsFixed(0)}',
+                        formatMoney(training.price),
                         style: const TextStyle(
                             color: Color(0xFFE8622A), fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -671,12 +697,12 @@ class _TrainingCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       _Chip(
                           icon: Icons.people,
-                          label: '${training.maxCapacity} spots',
+                          label: AppLocalizations.of(context).spotsCount(training.maxCapacity),
                           color: Colors.purple),
                       const SizedBox(width: 8),
                       _Chip(
                           icon: Icons.trending_up,
-                          label: training.difficulty.name,
+                          label: training.difficulty.label,
                           color: diffColor),
                       const Spacer(),
                       if (training.averageRating != null)
@@ -742,10 +768,10 @@ class _ErrorView extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.error_outline, color: Colors.red[300], size: 48),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(error, style: TextStyle(color: Colors.grey[400]), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
+          SizedBox(height: 16),
+          ElevatedButton(onPressed: onRetry, child: Text(AppLocalizations.of(context).retry)),
         ]),
       );
 }
@@ -757,8 +783,8 @@ class _EmptyView extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.fitness_center, color: Colors.grey[700], size: 64),
-          const SizedBox(height: 16),
-          Text('No trainings found', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+          SizedBox(height: 16),
+          Text(AppLocalizations.of(context).noTrainingsFound, style: TextStyle(color: Colors.grey[500], fontSize: 16)),
         ]),
       );
 }
@@ -772,13 +798,13 @@ class _FilteredEmptyView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Icons.filter_list_off, color: Colors.grey[600], size: 56),
-          const SizedBox(height: 12),
-          Text('No trainings match your filters',
+          SizedBox(height: 12),
+          Text(AppLocalizations.of(context).noTrainingsMatchFilters,
               style: TextStyle(color: Colors.grey[400], fontSize: 15)),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextButton.icon(
-            icon: const Icon(Icons.clear, size: 16),
-            label: const Text('Clear filters'),
+            icon: Icon(Icons.clear, size: 16),
+            label: Text(AppLocalizations.of(context).clearFilters),
             style: TextButton.styleFrom(foregroundColor: const Color(0xFFE8622A)),
             onPressed: onClear,
           ),

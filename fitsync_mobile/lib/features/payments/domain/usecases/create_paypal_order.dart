@@ -1,35 +1,15 @@
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
+import '../entities/paypal_order.dart';
 import '../repositories/payments_repository.dart';
 
-class CreatePayPalOrderParams extends Equatable {
-  final double amount;
-  final int reservationId;
-  final String currency;
-
-  const CreatePayPalOrderParams({
-    required this.amount,
-    required this.reservationId,
-    this.currency = 'USD',
-  });
-
-  @override
-  List<Object?> get props => [amount, reservationId, currency];
-}
-
-class CreatePayPalOrder implements UseCase<Map<String, String>, CreatePayPalOrderParams> {
+/// Opens a PayPal order for a reservation. Only the reservation id is sent; the
+/// backend derives the amount from the reservation it priced at booking time.
+class CreatePayPalOrder {
   final PaymentsRepository repository;
 
   CreatePayPalOrder(this.repository);
 
-  @override
-  Future<Either<Failure, Map<String, String>>> call(CreatePayPalOrderParams params) async {
-    return await repository.createPayPalOrder(
-      amount: params.amount,
-      reservationId: params.reservationId,
-      currency: params.currency,
-    );
-  }
+  Future<Either<Failure, PayPalOrder>> call(int reservationId) =>
+      repository.createPayPalOrder(reservationId: reservationId);
 }

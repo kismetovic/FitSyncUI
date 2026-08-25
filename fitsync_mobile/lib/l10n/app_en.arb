@@ -1,187 +1,872 @@
 {
+  "errComplianceViolation": "PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.",
+  "@errComplianceViolation": {
+    "description": "PayPal refusal codes"
+  },
+  "errPayeeRestricted": "The gym PayPal account cannot accept this payment right now.",
+  "@errPayeeRestricted": {
+    "description": "PayPal refusal codes"
+  },
+  "errCurrencyNotSupported": "PayPal does not support this currency for one of the accounts involved.",
+  "@errCurrencyNotSupported": {
+    "description": "PayPal refusal codes"
+  },
+  "errTransactionRefused": "PayPal refused this transaction. The payment was not taken.",
+  "@errTransactionRefused": {
+    "description": "PayPal refusal codes"
+  },
+  "calendarEmpty": "No reservations yet.\nTap a day to see details.",
+  "@calendarEmpty": {
+    "description": "Calendar empty state"
+  },
+  "payNow": "Pay now",
+  "@payNow": {
+    "description": "Pay an unpaid reservation from the bookings list"
+  },
+  "reservationConfirmed": "Reservation confirmed",
+  "@reservationConfirmed": {
+    "description": "Booking covered by a monthly package"
+  },
+  "coveredByPackageBody": "The \"{name}\" session is covered by your monthly package, so there is nothing to pay.\n\nOne session was drawn from the package.",
+  "@coveredByPackageBody": {
+    "description": "Booking covered by a monthly package"
+    ,"placeholders": { "name": { "type": "String" } }
+  },
+  "nothingToPayTitle": "Nothing to pay",
+  "@nothingToPayTitle": {
+    "description": "Booking covered by a monthly package"
+  },
+  "nothingToPayBody": "This reservation is fully covered by your monthly package.",
+  "@nothingToPayBody": {
+    "description": "Booking covered by a monthly package"
+  },
+  "finish": "Done",
+  "@finish": {
+    "description": "Booking covered by a monthly package"
+  },
+  "viewMyReservations": "My reservations",
+  "@viewMyReservations": {
+    "description": "Booking covered by a monthly package"
+  },
+  "alreadyCoveredBy": "You already have \"{name}\", which covers the same trainings.",
+  "@alreadyCoveredBy": {
+    "description": "Package overlap rule"
+    ,"placeholders": { "name": { "type": "String" } }
+  },
+  "errMembershipOverlap": "You already have a package covering the same trainings. Use it up, let it expire or cancel it before buying another.",
+  "@errMembershipOverlap": {
+    "description": "Package overlap rule"
+  },
+  "faqTitle": "Frequently asked questions",
+  "@faqTitle": {
+    "description": "Help screen section heading"
+  },
+  "active": "Active",
+  "@active": {
+    "description": "Membership status label"
+  },
+  "expired": "Expired",
+  "@expired": {
+    "description": "Membership status label"
+  },
+  "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Membership status label"
+  },
+  "cash": "Cash",
+  "@cash": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "reservation": "Reservation",
+  "@reservation": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "packageAwaitingPayment": "Awaiting payment",
+  "@packageAwaitingPayment": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "payPackage": "Pay for package",
+  "@payPackage": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "cancelPackage": "Cancel package",
+  "@cancelPackage": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "cancelPackageConfirm": "Cancel this package?",
+  "@cancelPackageConfirm": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "packageCancelled": "The package was cancelled.",
+  "@packageCancelled": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "packagePaid": "The package is paid for and active.",
+  "@packagePaid": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "packageUnpaidNotice": "This package is not paid for yet, so it cannot be used for bookings.",
+  "@packageUnpaidNotice": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "choosePaymentMethod": "Choose a payment method",
+  "@choosePaymentMethod": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "payWithPayPalShort": "Pay with PayPal",
+  "@payWithPayPalShort": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "payWithCashShort": "Pay in cash at the desk",
+  "@payWithCashShort": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "cashSelectedPackage": "Noted. The package activates once staff take the payment at the desk.",
+  "@cashSelectedPackage": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "helpContactUs": "Contact us",
+  "@helpContactUs": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "helpNoFaqs": "There are no published questions right now.",
+  "@helpNoFaqs": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "helpLoadFailed": "Help content is unavailable right now.",
+  "@helpLoadFailed": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "workingHours": "Working hours",
+  "@workingHours": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "errMembershipInUse": "A package with sessions already spent cannot be cancelled. Cancel the reservations that used it first.",
+  "@errMembershipInUse": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "errMembershipCancelled": "A cancelled package cannot be paid for.",
+  "@errMembershipCancelled": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "errAlreadyCancelled": "This package is already cancelled.",
+  "@errAlreadyCancelled": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "errOrderPackageMismatch": "This PayPal order belongs to a different package.",
+  "@errOrderPackageMismatch": {
+    "description": "Package payment, cancellation and help screen"
+  },
+  "errNetworkTimeout": "The server is not responding. Check that it is running and try again.",
+  "@errNetworkTimeout": {
+    "description": "API/network error, keyed by the error code"
+  },
+  "errNetworkUnreachable": "Cannot reach the server. Check your network or that the API is running.",
+  "@errNetworkUnreachable": {
+    "description": "API/network error, keyed by the error code"
+  },
+  "errInvalidCredentials": "Wrong username or password.",
+  "@errInvalidCredentials": {
+    "description": "API/network error, keyed by the error code"
+  },
+  "errTimeConflict": "You already have a reservation at this time. Enable the out-of-hours option to request an exception.",
+  "@errTimeConflict": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errCapacityFull": "This term is full. Please choose another time.",
+  "@errCapacityFull": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errDateInPast": "A reservation cannot be made for a time that has already passed.",
+  "@errDateInPast": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errOutsideAvailability": "The selected slot is outside the trainer's working hours. Enable the out-of-hours option to send a request for approval; an extra fee applies.",
+  "@errOutsideAvailability": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errNoUsableMembership": "A monthly reservation needs an active package with sessions left that covers this training type.",
+  "@errNoUsableMembership": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errMembershipMismatch": "The selected package does not cover this training type.",
+  "@errMembershipMismatch": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errReservationClosed": "A cancelled or completed reservation can no longer be edited.",
+  "@errReservationClosed": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errReservationCancelled": "A cancelled reservation cannot be paid.",
+  "@errReservationCancelled": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errReasonRequired": "A cancellation reason is required.",
+  "@errReasonRequired": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errTrainingNotFound": "The selected training does not exist.",
+  "@errTrainingNotFound": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errInvalidService": "One or more selected additional services do not exist.",
+  "@errInvalidService": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errAlreadyPaid": "This reservation has already been paid.",
+  "@errAlreadyPaid": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errNothingToPay": "This reservation has no outstanding amount; it is covered by a monthly package.",
+  "@errNothingToPay": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errAwaitingApproval": "This reservation is still waiting for trainer approval and cannot be paid yet.",
+  "@errAwaitingApproval": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errOrderMismatch": "This PayPal order belongs to a different reservation.",
+  "@errOrderMismatch": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errVerificationFailed": "The payment did not pass verification. Nothing was recorded; please try again or contact us.",
+  "@errVerificationFailed": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errOrderNotApproved": "The payment has not been approved on PayPal yet. Finish the approval, then return to the app.",
+  "@errOrderNotApproved": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errOrderAlreadyCaptured": "This PayPal order has already been captured.",
+  "@errOrderAlreadyCaptured": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errInstrumentDeclined": "PayPal declined the selected payment method. Choose another card or account.",
+  "@errInstrumentDeclined": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errPayerActionRequired": "PayPal requires an extra confirmation. Open PayPal again and finish the payment.",
+  "@errPayerActionRequired": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errTrainingNotAttended": "You can only review a training you have paid for and attended.",
+  "@errTrainingNotAttended": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errAlreadyReviewed": "You have already reviewed this training session.",
+  "@errAlreadyReviewed": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errPackageInactive": "This membership package is no longer on sale.",
+  "@errPackageInactive": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errStartInPast": "A membership cannot start in the past.",
+  "@errStartInPast": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errInvalidStatus": "A reservation in its current status cannot move to the requested status.",
+  "@errInvalidStatus": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errAvailabilityOverlap": "This window overlaps an availability slot the trainer already has.",
+  "@errAvailabilityOverlap": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
+  "errUnexpected": "An unexpected error occurred. Please try again.",
+  "@errUnexpected": {
+    "description": "API business-rule error, keyed by the server error code"
+  },
   "@@locale": "en",
   "appTitle": "FITSync",
-  "@appTitle": { "description": "Application title" },
-
+  "@appTitle": {
+    "description": "Application title"
+  },
   "loginTitle": "FITSync Login",
-  "@loginTitle": { "description": "Login page app bar title" },
-
+  "@loginTitle": {
+    "description": "Login page app bar title"
+  },
   "welcomeBack": "Welcome Back",
-  "@welcomeBack": { "description": "Welcome heading on login screen" },
-
+  "@welcomeBack": {
+    "description": "Welcome heading on login screen"
+  },
   "username": "Username",
-  "@username": { "description": "Username field label" },
-
+  "@username": {
+    "description": "Username field label"
+  },
   "password": "Password",
-  "@password": { "description": "Password field label" },
-
+  "@password": {
+    "description": "Password field label"
+  },
   "loginButton": "Login",
-  "@loginButton": { "description": "Login button text" },
-
+  "@loginButton": {
+    "description": "Login button text"
+  },
   "registerLink": "Don't have an account? Register",
-  "@registerLink": { "description": "Link to registration page" },
-
+  "@registerLink": {
+    "description": "Link to registration page"
+  },
   "pleaseEnterUsername": "Please enter username",
-  "@pleaseEnterUsername": { "description": "Username validation message" },
-
+  "@pleaseEnterUsername": {
+    "description": "Username validation message"
+  },
   "pleaseEnterPassword": "Please enter password",
-  "@pleaseEnterPassword": { "description": "Password validation message" },
-
+  "@pleaseEnterPassword": {
+    "description": "Password validation message"
+  },
   "navHome": "Home",
-  "@navHome": { "description": "Bottom nav: home" },
-
+  "@navHome": {
+    "description": "Bottom nav: home"
+  },
   "navBookings": "Bookings",
-  "@navBookings": { "description": "Bottom nav: bookings" },
-
+  "@navBookings": {
+    "description": "Bottom nav: bookings"
+  },
   "navCalendar": "Calendar",
-  "@navCalendar": { "description": "Bottom nav: calendar" },
-
+  "@navCalendar": {
+    "description": "Bottom nav: calendar"
+  },
   "navProfile": "Profile",
-  "@navProfile": { "description": "Bottom nav: profile" },
-
+  "@navProfile": {
+    "description": "Bottom nav: profile"
+  },
   "registerTitle": "Register",
-  "@registerTitle": { "description": "Register page app bar title" },
-
+  "@registerTitle": {
+    "description": "Register page app bar title"
+  },
   "createAccount": "Create Account",
-  "@createAccount": { "description": "Create account heading" },
-
+  "@createAccount": {
+    "description": "Create account heading"
+  },
   "firstName": "First Name",
-  "@firstName": { "description": "First name field label" },
-
+  "@firstName": {
+    "description": "First name field label"
+  },
   "lastName": "Last Name",
-  "@lastName": { "description": "Last name field label" },
-
+  "@lastName": {
+    "description": "Last name field label"
+  },
   "email": "Email",
-  "@email": { "description": "Email field label" },
-
+  "@email": {
+    "description": "Email field label"
+  },
   "phoneNumber": "Phone Number",
-  "@phoneNumber": { "description": "Phone number field label" },
-
+  "@phoneNumber": {
+    "description": "Phone number field label"
+  },
   "confirmPassword": "Confirm Password",
-  "@confirmPassword": { "description": "Confirm password field label" },
-
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
   "required": "Required",
-  "@required": { "description": "Required field validation" },
-
+  "@required": {
+    "description": "Required field validation"
+  },
   "passwordsDoNotMatch": "Passwords do not match",
-  "@passwordsDoNotMatch": { "description": "Password mismatch validation" },
-
+  "@passwordsDoNotMatch": {
+    "description": "Password mismatch validation"
+  },
   "language": "Language",
-  "@language": { "description": "Language setting label" },
+  "@language": {
+    "description": "Language setting label"
+  },
   "selectLanguage": "Select Language",
-  "@selectLanguage": { "description": "Language selection dialog title" },
+  "@selectLanguage": {
+    "description": "Language selection dialog title"
+  },
   "bosnian": "Bosanski",
-  "@bosnian": { "description": "Bosnian language option" },
+  "@bosnian": {
+    "description": "Bosnian language option"
+  },
   "english": "English",
-  "@english": { "description": "English language option" },
-
+  "@english": {
+    "description": "English language option"
+  },
   "profile": "Profile",
-  "@profile": { "description": "Profile page title" },
+  "@profile": {
+    "description": "Profile page title"
+  },
   "phone": "Phone",
-  "@phone": { "description": "Phone field label" },
+  "@phone": {
+    "description": "Phone field label"
+  },
   "address": "Address",
-  "@address": { "description": "Address field label" },
+  "@address": {
+    "description": "Address field label"
+  },
   "notSet": "Not set",
-  "@notSet": { "description": "Value not set placeholder" },
+  "@notSet": {
+    "description": "Value not set placeholder"
+  },
   "notifications": "Notifications",
-  "@notifications": { "description": "Notifications label" },
+  "@notifications": {
+    "description": "Notifications label"
+  },
   "changePassword": "Change Password",
-  "@changePassword": { "description": "Change password label" },
+  "@changePassword": {
+    "description": "Change password label"
+  },
   "helpAndSupport": "Help & Support",
-  "@helpAndSupport": { "description": "Help and support label" },
+  "@helpAndSupport": {
+    "description": "Help and support label"
+  },
   "logout": "Logout",
-  "@logout": { "description": "Logout label" },
+  "@logout": {
+    "description": "Logout label"
+  },
   "logoutConfirm": "Are you sure you want to logout?",
-  "@logoutConfirm": { "description": "Logout confirmation message" },
-
+  "@logoutConfirm": {
+    "description": "Logout confirmation message"
+  },
   "bookTraining": "Book Training",
-  "@bookTraining": { "description": "Book training page title" },
+  "@bookTraining": {
+    "description": "Book training page title"
+  },
   "selectDate": "Select Date",
-  "@selectDate": { "description": "Select date section header" },
+  "@selectDate": {
+    "description": "Select date section header"
+  },
   "reservationType": "Reservation Type",
-  "@reservationType": { "description": "Reservation type section header" },
+  "@reservationType": {
+    "description": "Reservation type section header"
+  },
   "requestOutsideAvailability": "Request outside availability",
-  "@requestOutsideAvailability": { "description": "Outside availability toggle label" },
+  "@requestOutsideAvailability": {
+    "description": "Outside availability toggle label"
+  },
   "outsideAvailabilityHint": "Requires trainer approval. Additional charge may apply.",
-  "@outsideAvailabilityHint": { "description": "Outside availability hint text" },
+  "@outsideAvailabilityHint": {
+    "description": "Outside availability hint text"
+  },
   "additionalServices": "Additional Services",
-  "@additionalServices": { "description": "Additional services section header" },
+  "@additionalServices": {
+    "description": "Additional services section header"
+  },
   "enhanceExperience": "Enhance your training experience",
-  "@enhanceExperience": { "description": "Additional services subtitle" },
+  "@enhanceExperience": {
+    "description": "Additional services subtitle"
+  },
   "noAdditionalServices": "No additional services available",
-  "@noAdditionalServices": { "description": "No additional services message" },
+  "@noAdditionalServices": {
+    "description": "No additional services message"
+  },
   "continueButton": "Continue",
-  "@continueButton": { "description": "Continue button label" },
+  "@continueButton": {
+    "description": "Continue button label"
+  },
   "oneTimeSession": "One-time Session",
-  "@oneTimeSession": { "description": "One-time reservation type" },
+  "@oneTimeSession": {
+    "description": "One-time reservation type"
+  },
   "monthlyPackage": "Monthly Package",
-  "@monthlyPackage": { "description": "Monthly reservation type" },
+  "@monthlyPackage": {
+    "description": "Monthly reservation type"
+  },
   "singleSession": "Single training session",
-  "@singleSession": { "description": "One-time session description" },
+  "@singleSession": {
+    "description": "One-time session description"
+  },
   "recurringMonthly": "Recurring monthly training",
-  "@recurringMonthly": { "description": "Monthly package description" },
-
+  "@recurringMonthly": {
+    "description": "Monthly package description"
+  },
   "confirmReservation": "Confirm Reservation",
-  "@confirmReservation": { "description": "Confirm reservation page title" },
+  "@confirmReservation": {
+    "description": "Confirm reservation page title"
+  },
   "reviewBooking": "Review your booking",
-  "@reviewBooking": { "description": "Review booking heading" },
+  "@reviewBooking": {
+    "description": "Review booking heading"
+  },
   "confirmDetails": "Please confirm the details below",
-  "@confirmDetails": { "description": "Confirm details subtitle" },
+  "@confirmDetails": {
+    "description": "Confirm details subtitle"
+  },
   "pendingTrainerApproval": "Pending Trainer Approval",
-  "@pendingTrainerApproval": { "description": "Pending approval badge" },
+  "@pendingTrainerApproval": {
+    "description": "Pending approval badge"
+  },
   "outsideHoursWarning": "This session is outside regular hours. The trainer must approve it before it is confirmed. An additional charge may apply.",
-  "@outsideHoursWarning": { "description": "Outside hours warning message" },
+  "@outsideHoursWarning": {
+    "description": "Outside hours warning message"
+  },
   "dateAndTime": "Date & Time",
-  "@dateAndTime": { "description": "Date and time label" },
+  "@dateAndTime": {
+    "description": "Date and time label"
+  },
   "type": "Type",
-  "@type": { "description": "Type label" },
+  "@type": {
+    "description": "Type label"
+  },
   "basePrice": "Base Price",
-  "@basePrice": { "description": "Base price label" },
+  "@basePrice": {
+    "description": "Base price label"
+  },
   "total": "Total",
-  "@total": { "description": "Total price label" },
+  "@total": {
+    "description": "Total price label"
+  },
   "confirmAndContinue": "Confirm & Continue",
-  "@confirmAndContinue": { "description": "Confirm and continue button" },
+  "@confirmAndContinue": {
+    "description": "Confirm and continue button"
+  },
   "goBack": "Go Back",
-  "@goBack": { "description": "Go back button" },
-
+  "@goBack": {
+    "description": "Go back button"
+  },
   "myReservations": "My Reservations",
-  "@myReservations": { "description": "My reservations page title" },
+  "@myReservations": {
+    "description": "My reservations page title"
+  },
   "noReservations": "No reservations yet",
-  "@noReservations": { "description": "No reservations empty state" },
+  "@noReservations": {
+    "description": "No reservations empty state"
+  },
   "cancelReservation": "Cancel Reservation",
-  "@cancelReservation": { "description": "Cancel reservation button" },
+  "@cancelReservation": {
+    "description": "Cancel reservation button"
+  },
   "cancelReservationConfirm": "Are you sure you want to cancel this reservation?",
-  "@cancelReservationConfirm": { "description": "Cancel reservation confirmation" },
-
+  "@cancelReservationConfirm": {
+    "description": "Cancel reservation confirmation"
+  },
   "noNotificationsYet": "No notifications yet",
-  "@noNotificationsYet": { "description": "Empty notifications state" },
+  "@noNotificationsYet": {
+    "description": "Empty notifications state"
+  },
   "retry": "Retry",
-  "@retry": { "description": "Retry button" },
-
+  "@retry": {
+    "description": "Retry button"
+  },
   "searchTrainings": "Search trainings...",
-  "@searchTrainings": { "description": "Search trainings placeholder" },
+  "@searchTrainings": {
+    "description": "Search trainings placeholder"
+  },
   "recommended": "Recommended for you",
-  "@recommended": { "description": "Recommendations section header" },
+  "@recommended": {
+    "description": "Recommendations section header"
+  },
   "allTrainings": "All Trainings",
-  "@allTrainings": { "description": "All trainings section header" },
-
+  "@allTrainings": {
+    "description": "All trainings section header"
+  },
   "timeConflict": "You already have a reservation at this time. Enable 'outside availability' to request an exception pending trainer approval.",
-  "@timeConflict": { "description": "Time conflict error message" },
-
+  "@timeConflict": {
+    "description": "Time conflict error message"
+  },
   "statusInitial": "Initial",
   "statusApproved": "Approved",
   "statusPaid": "Paid",
   "statusCancelled": "Cancelled",
   "statusCompleted": "Completed",
   "statusPendingApproval": "Pending Approval",
-
   "myPayments": "My Payments",
-  "@myPayments": { "description": "My payments page title" },
+  "@myPayments": {
+    "description": "My payments page title"
+  },
   "noMyPayments": "No payment history yet",
-  "@noMyPayments": { "description": "Empty payment history message" },
-
+  "@noMyPayments": {
+    "description": "Empty payment history message"
+  },
   "cancel": "Cancel",
-  "@cancel": { "description": "Cancel button" },
+  "@cancel": {
+    "description": "Cancel button"
+  },
   "training": "Training",
-  "@training": { "description": "Training label" }
+  "@training": {
+    "description": "Training label"
+  },
+  "monthlyPackages": "Monthly packages",
+  "@monthlyPackages": {
+    "description": "Membership shop title"
+  },
+  "myPackages": "My packages",
+  "@myPackages": {
+    "description": "Section listing the packages the user owns"
+  },
+  "noPackagesOwned": "You do not own a monthly package yet",
+  "@noPackagesOwned": {
+    "description": "Empty state for owned packages"
+  },
+  "buyPackage": "Buy package",
+  "@buyPackage": {
+    "description": "Purchase button"
+  },
+  "buy": "Buy",
+  "@buy": {
+    "description": "Short purchase confirmation button"
+  },
+  "packagePurchased": "Package purchased",
+  "@packagePurchased": {
+    "description": "Snack bar after a successful purchase"
+  },
+  "sessionsLeft": "{remaining} of {total} sessions left",
+  "@sessionsLeft": {
+    "description": "Remaining sessions on an owned package",
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "validUntil": "Valid until {date}",
+  "@validUntil": {
+    "description": "Expiry date of an owned package",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "allTrainingTypes": "All training types",
+  "@allTrainingTypes": {
+    "description": "Package covers every training type"
+  },
+  "onlyTrainingType": "Only {type}",
+  "@onlyTrainingType": {
+    "description": "Package is restricted to one training type",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "perSession": "{price} per session",
+  "@perSession": {
+    "description": "Unit price of a package",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "packageDurationDays": "{days} days",
+  "@packageDurationDays": {
+    "description": "How long a package stays valid",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmPurchase": "Buy {name} for {price}?",
+  "@confirmPurchase": {
+    "description": "Purchase confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "needPackageForMonthly": "A monthly booking needs an active package with sessions left.",
+  "@needPackageForMonthly": {
+    "description": "Shown when the user picks Monthly without a package"
+  },
+  "coveredByPackage": "Covered by your package - no charge",
+  "@coveredByPackage": {
+    "description": "Monthly booking is paid from the package"
+  },
+  "recommendedBecause": "Why this?",
+  "@recommendedBecause": {
+    "description": "Label for the recommendation explanation"
+  },
+  "loadOlder": "Load older",
+  "@loadOlder": {
+    "description": "Loads the next page of older notifications"
+  },
+  "passwordChangedSuccess": "Password changed successfully",
+  "@passwordChangedSuccess": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "updatePassword": "Update Password",
+  "@updatePassword": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "contactSupport": "Contact Support",
+  "@contactSupport": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "versionLabel": "Version 1.0.0",
+  "@versionLabel": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "allRightsReserved": "© 2025 FitSync. All rights reserved.",
+  "@allRightsReserved": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "bookTrainingToStart": "Book a training to get started",
+  "@bookTrainingToStart": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "slotFree": "Free",
+  "@slotFree": {
+    "description": "Availability legend - the slot has room"
+  },
+  "slotLimited": "Limited",
+  "@slotLimited": {
+    "description": "Availability legend - the slot is nearly full"
+  },
+  "slotFull": "Full",
+  "@slotFull": {
+    "description": "Availability legend - the slot is booked out"
+  },
+  "availability": "Availability",
+  "@availability": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "leaveReview": "Leave a review",
+  "@leaveReview": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "rating": "Rating",
+  "@rating": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "shareExperience": "Share your experience (optional)...",
+  "@shareExperience": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "submitReview": "Submit Review",
+  "@submitReview": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "noReviewsYet": "No reviews yet",
+  "@noReviewsYet": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "beFirstToReview": "Be the first to leave a review!",
+  "@beFirstToReview": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "writeReview": "Write Review",
+  "@writeReview": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "filters": "Filters",
+  "@filters": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "clearAll": "Clear all",
+  "@clearAll": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "difficulty": "Difficulty",
+  "@difficulty": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "sortBy": "Sort by",
+  "@sortBy": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "findYourTraining": "Find your perfect training",
+  "@findYourTraining": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "pick": "Pick",
+  "@pick": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "noTrainingsFound": "No trainings found",
+  "@noTrainingsFound": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "noTrainingsMatchFilters": "No trainings match your filters",
+  "@noTrainingsMatchFilters": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "clearFilters": "Clear filters",
+  "@clearFilters": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "about": "About",
+  "@about": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "viewReviews": "View Reviews",
+  "@viewReviews": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "bookNow": "Book Now",
+  "@bookNow": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "markAllRead": "Mark all read",
+  "@markAllRead": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "reservationLabel": "Reservation #{id}",
+  "@reservationLabel": {
+    "description": "Added while removing hardcoded UI strings",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionsAdded": "{count} service(s) added",
+  "@sessionsAdded": {
+    "description": "Added while removing hardcoded UI strings",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perSessionSuffix": "/ session",
+  "@perSessionSuffix": {
+    "description": "Added while removing hardcoded UI strings"
+  },
+  "reviewsFor": "Reviews – {training}",
+  "@reviewsFor": {
+    "description": "Added while removing hardcoded UI strings",
+    "placeholders": {
+      "training": {
+        "type": "String"
+      }
+    }
+  },
+  "spotsCount": "{count} spots",
+  "@spotsCount": {
+    "description": "Capacity shown on a training card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "myCalendar": "My Calendar",
+  "@myCalendar": {
+    "description": "Calendar screen"
+  },
+  "upcomingReservations": "Upcoming Reservations",
+  "@upcomingReservations": {
+    "description": "Calendar screen"
+  },
+  "legendPending": "Pending",
+  "@legendPending": {
+    "description": "Calendar screen"
+  },
+  "noReservationsOn": "No reservations on {date}",
+  "@noReservationsOn": {
+    "description": "Calendar screen",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -3,6 +3,8 @@ import '../../domain/entities/training.dart';
 import '../../domain/entities/training_difficulty.dart';
 import '../../../reservations/presentation/pages/reservation_form_page.dart';
 import '../../../reviews/presentation/pages/training_reviews_page.dart';
+import '../../../../core/utils/money.dart';
+import 'package:fitsync_mobile/l10n/app_localizations.dart';
 
 class TrainingDetailPage extends StatelessWidget {
   final Training training;
@@ -76,7 +78,7 @@ class TrainingDetailPage extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${training.price.toStringAsFixed(0)}',
+                        formatMoney(training.price),
                         style: const TextStyle(
                           color: Color(0xFFE8622A),
                           fontSize: 26,
@@ -90,9 +92,9 @@ class TrainingDetailPage extends StatelessWidget {
                     children: [
                       _InfoBadge(Icons.timer, '${training.durationMinutes} min', Colors.blue),
                       const SizedBox(width: 10),
-                      _InfoBadge(Icons.people, '${training.maxCapacity} spots', Colors.purple),
+                      _InfoBadge(Icons.people, AppLocalizations.of(context).spotsCount(training.maxCapacity), Colors.purple),
                       const SizedBox(width: 10),
-                      _InfoBadge(Icons.trending_up, training.difficulty.name, diffColor),
+                      _InfoBadge(Icons.trending_up, training.difficulty.label, diffColor),
                     ],
                   ),
                   if (training.averageRating != null) ...[
@@ -113,15 +115,15 @@ class TrainingDetailPage extends StatelessWidget {
                     ),
                   ],
                   if (training.description != null && training.description!.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    const Text('About', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 20),
+                    Text(AppLocalizations.of(context).about, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
                     Text(training.description!, style: TextStyle(color: Colors.grey[300], height: 1.6)),
                   ],
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   OutlinedButton.icon(
-                    icon: const Icon(Icons.star, size: 18),
-                    label: const Text('View Reviews'),
+                    icon: Icon(Icons.star, size: 18),
+                    label: Text(AppLocalizations.of(context).viewReviews),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.amber,
                       side: const BorderSide(color: Colors.amber),
@@ -134,7 +136,7 @@ class TrainingDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 100),
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -147,8 +149,8 @@ class TrainingDetailPage extends StatelessWidget {
           child: SizedBox(
             height: 52,
             child: ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_month),
-              label: const Text('Book Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              icon: Icon(Icons.calendar_month),
+              label: Text(AppLocalizations.of(context).bookNow, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8622A),
                 foregroundColor: Colors.white,

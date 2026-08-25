@@ -15,4 +15,12 @@ enum TrainingDifficulty {
         return TrainingDifficulty.beginner;
     }
   }
+
+  /// Shown on the training cards. Printing `name` put the Dart identifier
+  /// ("beginner" / "advanced") into an otherwise Bosnian UI.
+  String get label => switch (this) {
+        TrainingDifficulty.beginner => 'Početni',
+        TrainingDifficulty.intermediate => 'Srednji',
+        TrainingDifficulty.advanced => 'Napredni',
+      };
 }

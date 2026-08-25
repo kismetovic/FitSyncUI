@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import '../../../../features/payments/presentation/providers/payments_provider.dart';
 import '../providers/dashboard_provider.dart';
+import '../../../../core/utils/money.dart';
 
 class DashboardOverviewPage extends StatefulWidget {
   const DashboardOverviewPage({super.key});
@@ -16,16 +17,17 @@ class _DashboardOverviewPageState extends State<DashboardOverviewPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // /Dashboard/stats already carries TotalRevenue as a SUM over captured
+      // payments, so the dashboard no longer loads the payment table to add it up.
       context.read<DashboardProvider>().loadStats();
-      context.read<AdminPaymentsProvider>().load();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    return Consumer2<DashboardProvider, AdminPaymentsProvider>(
-      builder: (context, dashProvider, paymentsProvider, _) {
+    final l = AppLocalizations.of(context);
+    return Consumer<DashboardProvider>(
+      builder: (context, dashProvider, _) {
         return Scaffold(
           backgroundColor: Colors.transparent,
           body: Padding(
@@ -43,15 +45,12 @@ class _DashboardOverviewPageState extends State<DashboardOverviewPage> {
                   const Center(child: CircularProgressIndicator())
                 else if (dashProvider.error != null)
                   _ErrorCard(
-                      message: dashProvider.error!,
-                      onRetry: () {
-                        dashProvider.loadStats();
-                        paymentsProvider.load();
-                      })
+                      message: apiErrorText(context, dashProvider.errorCode, dashProvider.error),
+                      onRetry: dashProvider.loadStats)
                 else
                   _StatsGrid(
                     stats: dashProvider.stats,
-                    totalRevenue: paymentsProvider.totalRevenue,
+                    totalRevenue: dashProvider.stats?.totalRevenue ?? 0,
                   ),
               ],
             ),
@@ -70,7 +69,7 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final cards = [
       (label: l.totalUsers, value: stats?.totalUsers?.toString() ?? '—',
           icon: Icons.people, color: const Color(0xFF4A90D9)),
@@ -78,8 +77,8 @@ class _StatsGrid extends StatelessWidget {
           icon: Icons.fitness_center, color: const Color(0xFFE8622A)),
       (label: l.totalReservations, value: stats?.totalReservations?.toString() ?? '—',
           icon: Icons.calendar_today, color: const Color(0xFF27AE60)),
-      (label: l.totalRevenue, value: '\$${totalRevenue.toStringAsFixed(2)}',
-          icon: Icons.attach_money, color: const Color(0xFFF39C12)),
+      (label: l.totalRevenue, value: formatMoney(totalRevenue),
+          icon: Icons.payments_outlined, color: const Color(0xFFF39C12)),
     ];
 
     return LayoutBuilder(
@@ -155,7 +154,9 @@ class _ErrorCard extends StatelessWidget {
           const Icon(Icons.error_outline, color: Colors.red),
           const SizedBox(width: 12),
           Expanded(child: Text(message, style: const TextStyle(color: Colors.red))),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
+          TextButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context).retry)),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/usecases/change_password.dart';
 import '../../domain/usecases/get_current_user.dart';
 import '../../domain/usecases/login_user.dart';
+import '../../domain/usecases/logout_user.dart';
 import '../../domain/usecases/register_user.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -12,12 +13,14 @@ class AuthProvider extends ChangeNotifier {
   final RegisterUser registerUser;
   final GetCurrentUser getCurrentUser;
   final ChangePassword changePasswordUseCase;
+  final LogoutUser logoutUser;
 
   AuthProvider({
     required this.loginUser,
     required this.registerUser,
     required this.getCurrentUser,
     required this.changePasswordUseCase,
+    required this.logoutUser,
   });
 
   User? _user;
@@ -29,9 +32,15 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  /// Stable code behind [error] (NETWORK_UNREACHABLE, VALIDATION_FAILED, …)
+  /// so the screen can print it in the user's language.
+  String? _errorCode;
+  String? get errorCode => _errorCode;
+
   Future<bool> login(String username, String password) async {
     _isLoading = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     final result = await loginUser(LoginParams(username: username, password: password));
@@ -40,6 +49,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) {
         _isLoading = false;
         _error = _mapFailureToMessage(failure);
+        _errorCode = failure.code;
         notifyListeners();
         return false;
       },
@@ -62,6 +72,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _isLoading = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     final result = await registerUser(RegisterParams(
@@ -77,6 +88,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) {
         _isLoading = false;
         _error = _mapFailureToMessage(failure);
+        _errorCode = failure.code;
         notifyListeners();
         return false;
       },
@@ -108,8 +120,14 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  /// Clears both the in-memory user and the persisted token. Dropping only the
+  /// in-memory user left the JWT in secure storage, so the next launch restored the
+  /// session and the user appeared to still be signed in.
   Future<void> logout() async {
+    await logoutUser(NoParams());
     _user = null;
+    _error = null;
+    _errorCode = null;
     notifyListeners();
   }
 
@@ -120,6 +138,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _isLoading = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     final result = await changePasswordUseCase(ChangePasswordParams(
@@ -132,6 +151,7 @@ class AuthProvider extends ChangeNotifier {
       (failure) {
         _isLoading = false;
         _error = _mapFailureToMessage(failure);
+        _errorCode = failure.code;
         notifyListeners();
         return false;
       },

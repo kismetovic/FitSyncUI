@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../domain/entities/additional_service.dart';
 import '../providers/additional_services_provider.dart';
+import '../../../../core/utils/money.dart';
 
 class AdditionalServicesPage extends StatefulWidget {
   const AdditionalServicesPage({super.key});
@@ -22,7 +24,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     return Consumer<AdditionalServicesProvider>(
       builder: (context, provider, _) => Scaffold(
         backgroundColor: Colors.transparent,
@@ -52,7 +54,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
               if (provider.error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                  child: Text(apiErrorText(context, provider.errorCode, provider.error), style: const TextStyle(color: Colors.red)),
                 ),
               Expanded(
                 child: provider.isLoading
@@ -115,7 +117,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Otkazi')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Otkaži')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8622A)),
             onPressed: () async {
@@ -129,7 +131,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
                 await provider.edit(service.id, name, price);
               }
             },
-            child: const Text('Sacuvaj', style: TextStyle(color: Colors.white)),
+            child: const Text('Sačuvaj', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -153,7 +155,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF1E2A3A),
-        title: const Text('Obrisi uslugu', style: TextStyle(color: Colors.white)),
+        title: const Text('Obriši uslugu', style: TextStyle(color: Colors.white)),
         content: Text('Obrisati "${service.name}"?', style: const TextStyle(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
@@ -206,7 +208,7 @@ class _ServicesTable extends StatelessWidget {
                 child: Row(children: [
                   Expanded(flex: 5, child: _d(Text(s.name,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)))),
-                  Expanded(flex: 2, child: _d(Text('\$${s.price.toStringAsFixed(2)}',
+                  Expanded(flex: 2, child: _d(Text(formatMoney(s.price),
                       style: const TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.w600)))),
                   Expanded(flex: 2, child: _d(Row(mainAxisSize: MainAxisSize.min, children: [
                     IconButton(

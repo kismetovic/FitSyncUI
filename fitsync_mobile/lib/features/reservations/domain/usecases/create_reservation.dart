@@ -11,7 +11,13 @@ class CreateReservationParams extends Equatable {
   final DateTime reservationDate;
   final ReservationType reservationType;
   final List<int> additionalServiceIds;
+
+  /// Ask for a slot outside the trainer's working hours. The backend verifies this
+  /// and, if it really is out of hours, applies a surcharge and requires approval.
   final bool requestOutsideAvailability;
+
+  /// Monthly package to draw this session from, for Monthly reservations.
+  final int? userMembershipId;
 
   const CreateReservationParams({
     required this.trainingId,
@@ -19,10 +25,18 @@ class CreateReservationParams extends Equatable {
     required this.reservationType,
     this.additionalServiceIds = const [],
     this.requestOutsideAvailability = false,
+    this.userMembershipId,
   });
 
   @override
-  List<Object?> get props => [trainingId, reservationDate, reservationType, additionalServiceIds, requestOutsideAvailability];
+  List<Object?> get props => [
+        trainingId,
+        reservationDate,
+        reservationType,
+        additionalServiceIds,
+        requestOutsideAvailability,
+        userMembershipId,
+      ];
 }
 
 class CreateReservation implements UseCase<Reservation, CreateReservationParams> {
@@ -31,13 +45,13 @@ class CreateReservation implements UseCase<Reservation, CreateReservationParams>
   CreateReservation(this.repository);
 
   @override
-  Future<Either<Failure, Reservation>> call(CreateReservationParams params) async {
-    return await repository.createReservation(
-      trainingId: params.trainingId,
-      reservationDate: params.reservationDate,
-      reservationType: params.reservationType,
-      additionalServiceIds: params.additionalServiceIds,
-      requestOutsideAvailability: params.requestOutsideAvailability,
-    );
-  }
+  Future<Either<Failure, Reservation>> call(CreateReservationParams params) =>
+      repository.createReservation(
+        trainingId: params.trainingId,
+        reservationDate: params.reservationDate,
+        reservationType: params.reservationType,
+        additionalServiceIds: params.additionalServiceIds,
+        requestOutsideAvailability: params.requestOutsideAvailability,
+        userMembershipId: params.userMembershipId,
+      );
 }

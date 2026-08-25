@@ -1,9 +1,13 @@
+import 'dart:async';
+import '../../../../core/error/api_error_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:fitsync_desktop/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/admin_payment.dart';
 import '../providers/payments_provider.dart';
+import '../../../../core/pagination/pagination_bar.dart';
+import '../../../../core/utils/money.dart';
 
 class PaymentsPage extends StatefulWidget {
   const PaymentsPage({super.key});
@@ -13,7 +17,21 @@ class PaymentsPage extends StatefulWidget {
 }
 
 class _PaymentsPageState extends State<PaymentsPage> {
-  String _searchQuery = '';
+  /// The filter is applied in SQL now, so keystrokes are debounced.
+  Timer? _searchDebounce;
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) context.read<AdminPaymentsProvider>().search(value.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -25,16 +43,11 @@ class _PaymentsPageState extends State<PaymentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     return Consumer<AdminPaymentsProvider>(
       builder: (context, provider, _) {
-        final filtered = provider.payments.where((p) {
-          final q = _searchQuery.toLowerCase();
-          return q.isEmpty ||
-              (p.userName?.toLowerCase().contains(q) ?? false) ||
-              (p.trainingName?.toLowerCase().contains(q) ?? false) ||
-              p.transactionId.toLowerCase().contains(q);
-        }).toList();
+        // Filtering happens server-side; this list holds one page.
+        final filtered = provider.payments;
 
         return Scaffold(
           backgroundColor: Colors.transparent,
@@ -71,14 +84,14 @@ class _PaymentsPageState extends State<PaymentsPage> {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   ),
-                  onChanged: (v) => setState(() => _searchQuery = v),
+                  onChanged: _onSearchChanged,
                 ),
                 const SizedBox(height: 20),
 
                 if (provider.error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                    child: Text(apiErrorText(context, provider.errorCode, provider.error), style: const TextStyle(color: Colors.red)),
                   ),
 
                 Expanded(
@@ -87,6 +100,13 @@ class _PaymentsPageState extends State<PaymentsPage> {
                       : filtered.isEmpty
                           ? _EmptyState(l: l)
                           : _PaymentsTable(payments: filtered, l: l),
+                ),
+                PaginationBar(
+                  page: provider.page,
+                  pageSize: provider.pageSize,
+                  totalCount: provider.totalCount,
+                  isLoading: provider.isLoading,
+                  onPageChanged: (p) => provider.load(page: p),
                 ),
               ],
             ),
@@ -107,8 +127,8 @@ class _SummaryRow extends StatelessWidget {
     return Row(children: [
       Expanded(child: _SummaryCard(
         label: l.totalRevenue,
-        value: '\$${provider.totalRevenue.toStringAsFixed(2)}',
-        icon: Icons.attach_money,
+        value: formatMoney(provider.totalRevenue),
+        icon: Icons.payments_outlined,
         color: const Color(0xFF27AE60),
       )),
       const SizedBox(width: 16),
@@ -116,7 +136,7 @@ class _SummaryRow extends StatelessWidget {
         label: 'PayPal',
         value: '${provider.paypalCount}',
         icon: Icons.account_balance_wallet,
-        color: const Color(0xFF003087),
+        color: const Color(0xFF3D95CE),
       )),
       const SizedBox(width: 16),
       Expanded(child: _SummaryCard(
@@ -128,7 +148,8 @@ class _SummaryRow extends StatelessWidget {
       const SizedBox(width: 16),
       Expanded(child: _SummaryCard(
         label: l.totalTransactions,
-        value: '${provider.payments.length}',
+        // Every payment, not the handful this page happens to show.
+        value: '${provider.totalCount}',
         icon: Icons.receipt_long,
         color: const Color(0xFFE8622A),
       )),
@@ -214,10 +235,10 @@ class _PaymentsTable extends StatelessWidget {
                         Text(p.userEmail!, style: TextStyle(color: Colors.grey[500], fontSize: 11), overflow: TextOverflow.ellipsis),
                     ],
                   ))),
-                  Expanded(flex: 2, child: _d(Text(p.trainingName ?? '—',
+                  Expanded(flex: 2, child: _d(Text(p.trainingName ?? p.membershipPackageName ?? '—',
                       style: const TextStyle(color: Colors.white70), overflow: TextOverflow.ellipsis))),
                   Expanded(flex: 1, child: _d(Text(
-                    '\$${p.amount.toStringAsFixed(2)}',
+                    formatMoney(p.amount),
                     style: const TextStyle(color: Color(0xFF27AE60), fontWeight: FontWeight.bold),
                   ))),
                   Expanded(flex: 1, child: _d(_ProviderBadge(isPayPal))),
@@ -243,7 +264,7 @@ class _ProviderBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isPayPal ? const Color(0xFF003087) : const Color(0xFF4A90D9);
+    final color = isPayPal ? const Color(0xFF3D95CE) : const Color(0xFF4A90D9);
     final label = isPayPal ? 'PayPal' : 'Gotovina';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -1,4 +1,6 @@
 import 'package:get_it/get_it.dart';
+import 'features/help/data/datasources/help_remote_data_source.dart';
+import 'features/help/presentation/providers/help_content_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,6 +10,7 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/auth/domain/usecases/login_user.dart';
 import 'features/auth/domain/usecases/register_user.dart';
 import 'features/auth/domain/usecases/get_current_user.dart';
+import 'features/auth/domain/usecases/logout_user.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
@@ -45,20 +48,29 @@ import 'features/trainings/data/datasources/trainings_remote_data_source.dart';
 import 'features/reservations/presentation/providers/reservations_provider.dart';
 import 'features/reservations/domain/usecases/approve_reservation.dart';
 import 'features/reservations/domain/usecases/get_reservations.dart';
-import 'features/reservations/domain/usecases/update_reservation.dart';
-import 'features/reservations/domain/usecases/delete_reservation.dart';
+import 'features/reservations/domain/usecases/complete_reservation.dart';
+import 'features/reservations/domain/usecases/cancel_reservation.dart';
+import 'features/reservations/domain/usecases/confirm_cash_payment.dart';
 import 'features/reservations/domain/repositories/reservations_repository.dart';
 import 'features/reservations/data/repositories/reservations_repository_impl.dart';
 import 'features/reservations/data/datasources/reservations_remote_data_source.dart';
 
 import 'features/users/presentation/providers/users_provider.dart';
 import 'features/users/domain/usecases/get_users.dart';
+import 'features/users/domain/usecases/create_user.dart';
 import 'features/users/domain/usecases/update_user.dart';
 import 'features/users/domain/usecases/delete_user.dart';
 import 'features/users/domain/usecases/send_payment_reminder.dart';
 import 'features/users/domain/repositories/users_repository.dart';
 import 'features/users/data/repositories/users_repository_impl.dart';
 import 'features/users/data/datasources/users_remote_data_source.dart';
+
+import 'features/reports/presentation/providers/reports_provider.dart';
+import 'features/reports/domain/usecases/get_reservation_report.dart';
+import 'features/reports/domain/usecases/get_revenue_report.dart';
+import 'features/reports/domain/repositories/reports_repository.dart';
+import 'features/reports/data/repositories/reports_repository_impl.dart';
+import 'features/reports/data/datasources/reports_remote_data_source.dart';
 
 import 'features/reviews/presentation/providers/reviews_provider.dart';
 import 'features/payments/presentation/providers/payments_provider.dart';
@@ -68,6 +80,19 @@ import 'features/reviews/domain/usecases/delete_review.dart';
 import 'features/reviews/domain/repositories/reviews_repository.dart';
 import 'features/reviews/data/repositories/reviews_repository_impl.dart';
 import 'features/reviews/data/datasources/reviews_remote_data_source.dart';
+import 'features/memberships/presentation/providers/memberships_provider.dart';
+import 'features/memberships/domain/usecases/get_membership_packages.dart';
+import 'features/memberships/domain/usecases/create_membership_package.dart';
+import 'features/memberships/domain/usecases/update_membership_package.dart';
+import 'features/memberships/domain/usecases/delete_membership_package.dart';
+import 'features/memberships/domain/repositories/memberships_repository.dart';
+import 'features/memberships/data/repositories/memberships_repository_impl.dart';
+import 'features/memberships/data/datasources/memberships_remote_data_source.dart';
+import 'features/trainers/presentation/providers/trainers_provider.dart';
+import 'features/trainers/domain/usecases/trainer_usecases.dart';
+import 'features/trainers/domain/repositories/trainers_repository.dart';
+import 'features/trainers/data/repositories/trainers_repository_impl.dart';
+import 'features/trainers/data/datasources/trainers_remote_data_source.dart';
 
 final sl = GetIt.instance;
 
@@ -78,10 +103,11 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => LocaleProvider(sharedPreferences));
 
-  sl.registerFactory(() => AuthProvider(loginUser: sl(), registerUser: sl(), getCurrentUser: sl()));
+  sl.registerFactory(() => AuthProvider(loginUser: sl(), registerUser: sl(), getCurrentUser: sl(), logoutUser: sl()));
   sl.registerLazySingleton(() => LoginUser(sl()));
   sl.registerLazySingleton(() => RegisterUser(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
+  sl.registerLazySingleton(() => LogoutUser(sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl(), localDataSource: sl()));
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
   sl.registerLazySingleton<AuthLocalDataSource>(() => AuthLocalDataSourceImpl(secureStorage: sl(), sharedPreferences: sl()));
@@ -123,25 +149,33 @@ Future<void> init() async {
 
   sl.registerFactory(() => ReservationsProvider(
     getReservations: sl(),
-    updateReservation: sl(),
     approveReservation: sl(),
-    deleteReservation: sl(),
+    completeReservation: sl(),
+    cancelReservation: sl(),
+    confirmCashPayment: sl(),
   ));
   sl.registerLazySingleton(() => GetReservations(sl()));
-  sl.registerLazySingleton(() => UpdateReservation(sl()));
   sl.registerLazySingleton(() => ApproveReservation(sl()));
-  sl.registerLazySingleton(() => DeleteReservation(sl()));
+  sl.registerLazySingleton(() => CompleteReservation(sl()));
+  sl.registerLazySingleton(() => CancelReservation(sl()));
+  sl.registerLazySingleton(() => ConfirmCashPayment(sl()));
   sl.registerLazySingleton<ReservationsRepository>(() => ReservationsRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<ReservationsRemoteDataSource>(() => ReservationsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+
+  sl.registerLazySingleton<HelpRemoteDataSource>(
+      () => HelpRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+  sl.registerFactory(() => HelpContentProvider(dataSource: sl()));
 
   sl.registerFactory(() => UsersProvider(
     getUsers: sl(),
     updateUser: sl(),
+    createUser: sl(),
     deleteUser: sl(),
     sendPaymentReminder: sl(),
   ));
   sl.registerLazySingleton(() => GetUsers(sl()));
   sl.registerLazySingleton(() => UpdateUser(sl()));
+  sl.registerLazySingleton(() => CreateUser(sl()));
   sl.registerLazySingleton(() => DeleteUser(sl()));
   sl.registerLazySingleton(() => SendPaymentReminder(sl()));
   sl.registerLazySingleton<UsersRepository>(() => UsersRepositoryImpl(remoteDataSource: sl()));
@@ -155,5 +189,44 @@ Future<void> init() async {
   sl.registerLazySingleton(() => DeleteReview(sl()));
   sl.registerLazySingleton<ReviewsRepository>(() => ReviewsRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<ReviewsRemoteDataSource>(() => ReviewsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
-}
 
+  // Reports: the two required desktop PDFs. All aggregation happens on the API,
+  // so the desktop app only fetches and renders.
+  sl.registerFactory(() => ReportsProvider(getReservationReport: sl(), getRevenueReport: sl()));
+  sl.registerLazySingleton(() => GetReservationReport(sl()));
+  sl.registerLazySingleton(() => GetRevenueReport(sl()));
+  sl.registerLazySingleton<ReportsRepository>(() => ReportsRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<ReportsRemoteDataSource>(() => ReportsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+
+  // Memberships - the monthly packages sold in the mobile app (review item 19).
+  sl.registerFactory(() => MembershipsProvider(
+        getMembershipPackages: sl(),
+        createMembershipPackage: sl(),
+        updateMembershipPackage: sl(),
+        deleteMembershipPackage: sl(),
+      ));
+  sl.registerLazySingleton(() => GetMembershipPackages(sl()));
+  sl.registerLazySingleton(() => CreateMembershipPackage(sl()));
+  sl.registerLazySingleton(() => UpdateMembershipPackage(sl()));
+  sl.registerLazySingleton(() => DeleteMembershipPackage(sl()));
+  sl.registerLazySingleton<MembershipsRepository>(() => MembershipsRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<MembershipsRemoteDataSource>(() => MembershipsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+
+  // Trainers and their weekly availability windows (review item 19).
+  sl.registerFactory(() => TrainersProvider(
+        getTrainers: sl(),
+        createTrainer: sl(),
+        updateTrainer: sl(),
+        deleteTrainer: sl(),
+        addTrainerAvailability: sl(),
+        deleteTrainerAvailability: sl(),
+      ));
+  sl.registerLazySingleton(() => GetTrainers(sl()));
+  sl.registerLazySingleton(() => CreateTrainer(sl()));
+  sl.registerLazySingleton(() => UpdateTrainer(sl()));
+  sl.registerLazySingleton(() => DeleteTrainer(sl()));
+  sl.registerLazySingleton(() => AddTrainerAvailability(sl()));
+  sl.registerLazySingleton(() => DeleteTrainerAvailability(sl()));
+  sl.registerLazySingleton<TrainersRepository>(() => TrainersRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<TrainersRemoteDataSource>(() => TrainersRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+}

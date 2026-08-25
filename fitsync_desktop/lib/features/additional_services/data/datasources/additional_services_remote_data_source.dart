@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/error/dio_failure.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/error/failures.dart';
 import '../../../auth/data/datasources/auth_local_data_source.dart';
@@ -32,7 +33,7 @@ class AdditionalServicesRemoteDataSourceImpl implements AdditionalServicesRemote
       }
       throw const ServerFailure('Failed to get additional services');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -46,7 +47,7 @@ class AdditionalServicesRemoteDataSourceImpl implements AdditionalServicesRemote
       }
       throw const ServerFailure('Failed to create additional service');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -58,7 +59,7 @@ class AdditionalServicesRemoteDataSourceImpl implements AdditionalServicesRemote
       if (response.statusCode == 200) return AdditionalServiceModel.fromJson(response.data);
       throw const ServerFailure('Failed to update additional service');
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 
@@ -70,7 +71,7 @@ class AdditionalServicesRemoteDataSourceImpl implements AdditionalServicesRemote
         throw const ServerFailure('Failed to delete additional service');
       }
     } on DioException catch (e) {
-      throw ServerFailure(e.response?.data?.toString() ?? e.message ?? 'Request failed');
+      throw failureFrom(e);
     }
   }
 }

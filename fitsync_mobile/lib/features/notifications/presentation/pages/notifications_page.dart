@@ -16,6 +16,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
+    // The provider keeps itself current over SignalR (with a polling fallback), so
+    // this is only a first load when the page is opened; the list then updates on
+    // its own without the user pressing refresh.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationsProvider>().loadNotifications();
     });
@@ -23,7 +26,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     return Consumer<NotificationsProvider>(
       builder: (context, provider, _) {
         return Scaffold(
@@ -31,11 +34,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
           appBar: AppBar(
             backgroundColor: const Color(0xFF152030),
             foregroundColor: Colors.white,
-            title: Text(l.notifications),
+            title: Row(
+              children: [
+                Text(l.notifications),
+                const SizedBox(width: 10),
+                // Makes it visible that the list is being pushed to, not polled by hand.
+                _LiveBadge(isLive: provider.isLive),
+              ],
+            ),
             elevation: 0,
             actions: [
+              if (provider.unreadCount > 0)
+                TextButton(
+                  onPressed: provider.markAllRead,
+                  child: Text(l.markAllRead, style: TextStyle(color: Colors.white70, fontSize: 13)),
+                ),
               IconButton(
-                icon: const Icon(Icons.refresh, color: Colors.white70),
+                icon: Icon(Icons.refresh, color: Colors.white70),
+                tooltip: l.refresh,
                 onPressed: provider.loadNotifications,
               ),
             ],
@@ -48,12 +64,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ? _EmptyView(l: l)
                       : ListView.separated(
                           padding: const EdgeInsets.all(16),
-                          itemCount: provider.notifications.length,
+                          // One extra row for the "load older" action, so a paged
+                          // inbox never looks like the whole history.
+                          itemCount: provider.notifications.length +
+                              (provider.hasMore ? 1 : 0),
                           separatorBuilder: (_, __) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) => _NotificationCard(
-                            notification: provider.notifications[index],
-                            onTap: () => provider.markRead(provider.notifications[index].id),
-                          ),
+                          itemBuilder: (context, index) {
+                            if (index >= provider.notifications.length) {
+                              return _LoadMoreButton(
+                                isLoading: provider.isLoadingMore,
+                                onPressed: provider.loadMore,
+                                label: l.loadOlder,
+                              );
+                            }
+                            return _NotificationCard(
+                              notification: provider.notifications[index],
+                              onTap: () =>
+                                  provider.markRead(provider.notifications[index].id),
+                            );
+                          },
                         ),
         );
       },
@@ -147,7 +176,7 @@ class _ErrorView extends StatelessWidget {
       ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8622A)),
         onPressed: onRetry,
-        child: Text(l.retry, style: const TextStyle(color: Colors.white)),
+        child: Text(l.retry, style: TextStyle(color: Colors.white)),
       ),
     ]),
   );
@@ -161,8 +190,75 @@ class _EmptyView extends StatelessWidget {
   Widget build(BuildContext context) => Center(
     child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Icon(Icons.notifications_none, color: Colors.grey[700], size: 64),
-      const SizedBox(height: 16),
+      SizedBox(height: 16),
       Text(l.noNotificationsYet, style: TextStyle(color: Colors.grey[500], fontSize: 16)),
     ]),
   );
+}
+
+/// Small indicator showing whether the SignalR push connection is up. When it is,
+/// the list refreshes by itself; when it is not, the provider falls back to polling.
+class _LiveBadge extends StatelessWidget {
+  final bool isLive;
+
+  const _LiveBadge({required this.isLive});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isLive ? const Color(0xFF27AE60) : Colors.grey;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            isLive ? 'uživo' : 'offline',
+            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pulls in the next page of older notifications. Shown only while the server
+/// says there are more, so the inbox never truncates silently.
+class _LoadMoreButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
+  final String label;
+
+  const _LoadMoreButton({
+    required this.isLoading,
+    required this.onPressed,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE8622A)),
+                )
+              : TextButton.icon(
+                  onPressed: onPressed,
+                  icon: const Icon(Icons.expand_more, color: Color(0xFFE8622A), size: 18),
+                  label: Text(label, style: const TextStyle(color: Color(0xFFE8622A))),
+                ),
+        ),
+      );
 }

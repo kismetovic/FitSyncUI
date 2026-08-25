@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
-import '../../../../core/usecases/usecase.dart';
+import '../../../../core/pagination/paged_result.dart';
 import '../../domain/entities/reservation.dart';
-import '../../domain/entities/reservation_status.dart';
 import '../../domain/usecases/approve_reservation.dart';
+import '../../domain/usecases/cancel_reservation.dart';
+import '../../domain/usecases/complete_reservation.dart';
+import '../../domain/usecases/confirm_cash_payment.dart';
 import '../../domain/usecases/get_reservations.dart';
-import '../../domain/usecases/update_reservation.dart';
-import '../../domain/usecases/delete_reservation.dart';
 
+/// Administrative reservation actions.
+///
+/// Each action maps to a dedicated backend endpoint that enforces the state machine,
+/// so the UI cannot put a reservation into an inconsistent state. There is no
+/// "delete" here: a reservation is cancelled with a reason and stays on record.
 class ReservationsProvider extends ChangeNotifier {
   final GetReservations getReservations;
-  final UpdateReservation updateReservation;
   final ApproveReservation approveReservation;
-  final DeleteReservation deleteReservation;
+  final CompleteReservation completeReservation;
+  final CancelReservation cancelReservation;
+  final ConfirmCashPayment confirmCashPayment;
 
   ReservationsProvider({
     required this.getReservations,
-    required this.updateReservation,
     required this.approveReservation,
-    required this.deleteReservation,
+    required this.completeReservation,
+    required this.cancelReservation,
+    required this.confirmCashPayment,
   });
 
   List<Reservation> _reservations = [];
@@ -29,49 +36,120 @@ class ReservationsProvider extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  Future<void> loadReservations() async {
+  /// Stable API code behind [error] (TIME_CONFLICT, AVAILABILITY_OVERLAP, …),
+  /// so the screen can print the rule in the user's language rather than the
+  /// server's English sentence.
+  String? _errorCode;
+  String? get errorCode => _errorCode;
+
+  /// Current page metadata, straight from the API's PagedResult (review item 22).
+  int _page = 1;
+  int get page => _page;
+
+  int _pageSize = kDefaultPageSize;
+  int get pageSize => _pageSize;
+
+  int _totalCount = 0;
+  int get totalCount => _totalCount;
+
+  /// Current search term. Held here so paging through results keeps the filter.
+  String _query = '';
+  String get query => _query;
+
+  /// Searching restarts at page one: the result set is a different one.
+  Future<void> search(String term) async {
+    _query = term;
+    await loadReservations(page: 1);
+  }
+
+  Future<void> loadReservations({int? page}) async {
     _isLoading = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
-    final result = await getReservations(NoParams());
-    result.fold(
-      (failure) { _error = failure.message; _isLoading = false; notifyListeners(); },
-      (list) { _reservations = list; _isLoading = false; notifyListeners(); },
+    final requested = page ?? _page;
+    final result = await getReservations(
+      page: requested,
+      pageSize: _pageSize,
+      query: _query.isEmpty ? null : _query,
     );
+    result.fold(
+      (failure) { _error = failure.message; _errorCode = failure.code; },
+      (paged) {
+        _reservations = paged.items;
+        _page = paged.page;
+        _pageSize = paged.pageSize;
+        _totalCount = paged.totalCount;
+      },
+    );
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<bool> approve(int id) async {
     final result = await approveReservation(id);
+    return _applyResult(id, result);
+  }
+
+  Future<bool> complete(int id, {String? note}) async {
+    final result = await completeReservation(CompleteReservationParams(id: id, note: note));
+    return _applyResult(id, result);
+  }
+
+  Future<bool> cancel(int id, String reason) async {
+    final result = await cancelReservation(CancelReservationParams(id: id, reason: reason));
+    return _applyResult(id, result);
+  }
+
+  /// Confirms cash at the desk. The reservation then moves to Paid on the server, so
+  /// the list is reloaded to pick up the new status and allowed transitions.
+  Future<bool> confirmCash(int reservationId, {String? note}) async {
+    _error = null;
+    _errorCode = null;
+    final result = await confirmCashPayment(
+      ConfirmCashPaymentParams(reservationId: reservationId, note: note),
+    );
+
     return result.fold(
-      (f) { _error = f.message; notifyListeners(); return false; },
-      (updated) {
-        final idx = _reservations.indexWhere((e) => e.id == id);
-        if (idx != -1) _reservations[idx] = updated;
+      (failure) {
+        _error = failure.message;
+        _errorCode = failure.code;
+        notifyListeners();
+        return false;
+      },
+      (_) async {
+        await loadReservations();
+        return true;
+      },
+    );
+  }
+
+  bool _applyResult(int id, dynamic result) {
+    return result.fold(
+      (failure) {
+        _error = failure.message;
+        _errorCode = failure.code;
+        notifyListeners();
+        return false;
+      },
+      (Reservation updated) {
+        final index = _reservations.indexWhere((e) => e.id == id);
+        if (index != -1) {
+          _reservations = List.of(_reservations)..[index] = updated;
+        }
+        _error = null;
+    _errorCode = null;
         notifyListeners();
         return true;
       },
     );
   }
 
-  Future<bool> updateStatus(int id, ReservationStatus status) async {
-    final result = await updateReservation(UpdateReservationParams(id: id, status: status));
-    return result.fold(
-      (f) { _error = f.message; notifyListeners(); return false; },
-      (updated) {
-        final idx = _reservations.indexWhere((e) => e.id == id);
-        if (idx != -1) _reservations[idx] = updated;
-        notifyListeners();
-        return true;
-      },
-    );
-  }
-
-  Future<bool> remove(int id) async {
-    final result = await deleteReservation(id);
-    return result.fold(
-      (f) { _error = f.message; notifyListeners(); return false; },
-      (_) { _reservations.removeWhere((e) => e.id == id); notifyListeners(); return true; },
-    );
+  void clearError() {
+    _error = null;
+    _errorCode = null;
+    notifyListeners();
   }
 }

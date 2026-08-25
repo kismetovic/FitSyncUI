@@ -98,6 +98,420 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken. Try another payment method or contact us.'**
+  String get errComplianceViolation;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'The gym PayPal account cannot accept this payment right now.'**
+  String get errPayeeRestricted;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal does not support this currency for one of the accounts involved.'**
+  String get errCurrencyNotSupported;
+
+  /// PayPal refusal codes
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal refused this transaction. The payment was not taken.'**
+  String get errTransactionRefused;
+
+  /// Calendar empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No reservations yet.\nTap a day to see details.'**
+  String get calendarEmpty;
+
+  /// Pay an unpaid reservation from the bookings list
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get payNow;
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'Reservation confirmed'**
+  String get reservationConfirmed;
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'The \"{name}\" session is covered by your monthly package, so there is nothing to pay.\n\nOne session was drawn from the package.'**
+  String coveredByPackageBody(String name);
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to pay'**
+  String get nothingToPayTitle;
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation is fully covered by your monthly package.'**
+  String get nothingToPayBody;
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get finish;
+
+  /// Booking covered by a monthly package
+  ///
+  /// In en, this message translates to:
+  /// **'My reservations'**
+  String get viewMyReservations;
+
+  /// Package overlap rule
+  ///
+  /// In en, this message translates to:
+  /// **'You already have \"{name}\", which covers the same trainings.'**
+  String alreadyCoveredBy(String name);
+
+  /// Package overlap rule
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a package covering the same trainings. Use it up, let it expire or cancel it before buying another.'**
+  String get errMembershipOverlap;
+
+  /// Help screen section heading
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently asked questions'**
+  String get faqTitle;
+
+  /// Membership status label
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// Membership status label
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// Membership status label
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelled;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Reservation'**
+  String get reservation;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting payment'**
+  String get packageAwaitingPayment;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Pay for package'**
+  String get payPackage;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel package'**
+  String get cancelPackage;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this package?'**
+  String get cancelPackageConfirm;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'The package was cancelled.'**
+  String get packageCancelled;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'The package is paid for and active.'**
+  String get packagePaid;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'This package is not paid for yet, so it cannot be used for bookings.'**
+  String get packageUnpaidNotice;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a payment method'**
+  String get choosePaymentMethod;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with PayPal'**
+  String get payWithPayPalShort;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Pay in cash at the desk'**
+  String get payWithCashShort;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Noted. The package activates once staff take the payment at the desk.'**
+  String get cashSelectedPackage;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get helpContactUs;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'There are no published questions right now.'**
+  String get helpNoFaqs;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Help content is unavailable right now.'**
+  String get helpLoadFailed;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours'**
+  String get workingHours;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'A package with sessions already spent cannot be cancelled. Cancel the reservations that used it first.'**
+  String get errMembershipInUse;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled package cannot be paid for.'**
+  String get errMembershipCancelled;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'This package is already cancelled.'**
+  String get errAlreadyCancelled;
+
+  /// Package payment, cancellation and help screen
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order belongs to a different package.'**
+  String get errOrderPackageMismatch;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'The server is not responding. Check that it is running and try again.'**
+  String get errNetworkTimeout;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot reach the server. Check your network or that the API is running.'**
+  String get errNetworkUnreachable;
+
+  /// API/network error, keyed by the error code
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong username or password.'**
+  String get errInvalidCredentials;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a reservation at this time. Enable the out-of-hours option to request an exception.'**
+  String get errTimeConflict;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This term is full. Please choose another time.'**
+  String get errCapacityFull;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A reservation cannot be made for a time that has already passed.'**
+  String get errDateInPast;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected slot is outside the trainer\'s working hours. Enable the out-of-hours option to send a request for approval; an extra fee applies.'**
+  String get errOutsideAvailability;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A monthly reservation needs an active package with sessions left that covers this training type.'**
+  String get errNoUsableMembership;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected package does not cover this training type.'**
+  String get errMembershipMismatch;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled or completed reservation can no longer be edited.'**
+  String get errReservationClosed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancelled reservation cannot be paid.'**
+  String get errReservationCancelled;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A cancellation reason is required.'**
+  String get errReasonRequired;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The selected training does not exist.'**
+  String get errTrainingNotFound;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'One or more selected additional services do not exist.'**
+  String get errInvalidService;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation has already been paid.'**
+  String get errAlreadyPaid;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation has no outstanding amount; it is covered by a monthly package.'**
+  String get errNothingToPay;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This reservation is still waiting for trainer approval and cannot be paid yet.'**
+  String get errAwaitingApproval;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order belongs to a different reservation.'**
+  String get errOrderMismatch;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The payment did not pass verification. Nothing was recorded; please try again or contact us.'**
+  String get errVerificationFailed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'The payment has not been approved on PayPal yet. Finish the approval, then return to the app.'**
+  String get errOrderNotApproved;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This PayPal order has already been captured.'**
+  String get errOrderAlreadyCaptured;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal declined the selected payment method. Choose another card or account.'**
+  String get errInstrumentDeclined;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'PayPal requires an extra confirmation. Open PayPal again and finish the payment.'**
+  String get errPayerActionRequired;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You can only review a training you have paid for and attended.'**
+  String get errTrainingNotAttended;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'You have already reviewed this training session.'**
+  String get errAlreadyReviewed;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This membership package is no longer on sale.'**
+  String get errPackageInactive;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A membership cannot start in the past.'**
+  String get errStartInPast;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'A reservation in its current status cannot move to the requested status.'**
+  String get errInvalidStatus;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'This window overlaps an availability slot the trainer already has.'**
+  String get errAvailabilityOverlap;
+
+  /// API business-rule error, keyed by the server error code
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get errUnexpected;
+
   /// Application title
   ///
   /// In en, this message translates to:
@@ -571,6 +985,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Training'**
   String get training;
+
+  /// Membership shop title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly packages'**
+  String get monthlyPackages;
+
+  /// Section listing the packages the user owns
+  ///
+  /// In en, this message translates to:
+  /// **'My packages'**
+  String get myPackages;
+
+  /// Empty state for owned packages
+  ///
+  /// In en, this message translates to:
+  /// **'You do not own a monthly package yet'**
+  String get noPackagesOwned;
+
+  /// Purchase button
+  ///
+  /// In en, this message translates to:
+  /// **'Buy package'**
+  String get buyPackage;
+
+  /// Short purchase confirmation button
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get buy;
+
+  /// Snack bar after a successful purchase
+  ///
+  /// In en, this message translates to:
+  /// **'Package purchased'**
+  String get packagePurchased;
+
+  /// Remaining sessions on an owned package
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} of {total} sessions left'**
+  String sessionsLeft(int remaining, int total);
+
+  /// Expiry date of an owned package
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until {date}'**
+  String validUntil(String date);
+
+  /// Package covers every training type
+  ///
+  /// In en, this message translates to:
+  /// **'All training types'**
+  String get allTrainingTypes;
+
+  /// Package is restricted to one training type
+  ///
+  /// In en, this message translates to:
+  /// **'Only {type}'**
+  String onlyTrainingType(String type);
+
+  /// Unit price of a package
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per session'**
+  String perSession(String price);
+
+  /// How long a package stays valid
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String packageDurationDays(int days);
+
+  /// Purchase confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Buy {name} for {price}?'**
+  String confirmPurchase(String name, String price);
+
+  /// Shown when the user picks Monthly without a package
+  ///
+  /// In en, this message translates to:
+  /// **'A monthly booking needs an active package with sessions left.'**
+  String get needPackageForMonthly;
+
+  /// Monthly booking is paid from the package
+  ///
+  /// In en, this message translates to:
+  /// **'Covered by your package - no charge'**
+  String get coveredByPackage;
+
+  /// Label for the recommendation explanation
+  ///
+  /// In en, this message translates to:
+  /// **'Why this?'**
+  String get recommendedBecause;
+
+  /// Loads the next page of older notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Load older'**
+  String get loadOlder;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccess;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Update Password'**
+  String get updatePassword;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Version 1.0.0'**
+  String get versionLabel;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'© 2025 FitSync. All rights reserved.'**
+  String get allRightsReserved;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Book a training to get started'**
+  String get bookTrainingToStart;
+
+  /// Availability legend - the slot has room
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get slotFree;
+
+  /// Availability legend - the slot is nearly full
+  ///
+  /// In en, this message translates to:
+  /// **'Limited'**
+  String get slotLimited;
+
+  /// Availability legend - the slot is booked out
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get slotFull;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Availability'**
+  String get availability;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a review'**
+  String get leaveReview;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Share your experience (optional)...'**
+  String get shareExperience;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Review'**
+  String get submitReview;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get noReviewsYet;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to leave a review!'**
+  String get beFirstToReview;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Write Review'**
+  String get writeReview;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAll;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get difficulty;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Find your perfect training'**
+  String get findYourTraining;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Pick'**
+  String get pick;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'No trainings found'**
+  String get noTrainingsFound;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'No trainings match your filters'**
+  String get noTrainingsMatchFilters;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get clearFilters;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'View Reviews'**
+  String get viewReviews;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Book Now'**
+  String get bookNow;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Reservation #{id}'**
+  String reservationLabel(int id);
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'{count} service(s) added'**
+  String sessionsAdded(int count);
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'/ session'**
+  String get perSessionSuffix;
+
+  /// Added while removing hardcoded UI strings
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews – {training}'**
+  String reviewsFor(String training);
+
+  /// Capacity shown on a training card
+  ///
+  /// In en, this message translates to:
+  /// **'{count} spots'**
+  String spotsCount(int count);
+
+  /// Calendar screen
+  ///
+  /// In en, this message translates to:
+  /// **'My Calendar'**
+  String get myCalendar;
+
+  /// Calendar screen
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming Reservations'**
+  String get upcomingReservations;
+
+  /// Calendar screen
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get legendPending;
+
+  /// Calendar screen
+  ///
+  /// In en, this message translates to:
+  /// **'No reservations on {date}'**
+  String noReservationsOn(String date);
 }
 
 class _AppLocalizationsDelegate

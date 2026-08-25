@@ -6,8 +6,13 @@ import '../../../../features/trainings/domain/entities/training.dart';
 import '../../../additional_services/domain/entities/additional_service.dart';
 import '../../../additional_services/presentation/providers/additional_services_provider.dart';
 import '../../domain/entities/reservation_type.dart';
+import '../../../memberships/domain/entities/user_membership.dart';
+import '../../../memberships/presentation/pages/memberships_page.dart';
+import '../../../memberships/presentation/providers/memberships_provider.dart';
+import '../../domain/entities/slot_availability.dart';
 import '../providers/reservations_provider.dart';
 import 'reservation_confirm_page.dart';
+import '../../../../core/utils/money.dart';
 
 class ReservationFormPage extends StatefulWidget {
   final Training training;
@@ -23,31 +28,36 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
   ReservationType _reservationType = ReservationType.oneTime;
   bool _requestOutsideAvailability = false;
   bool _hasConflict = false;
-  Map<DateTime, int> _bookingCounts = {};
+  /// Free places per day, straight from the backend availability endpoint.
+  /// Capacity itself is enforced server-side; this only greys out full days.
+  Map<DateTime, SlotAvailability> _availability = {};
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AdditionalServicesProvider>().loadServices();
+      // Needed to tell the user whether a monthly booking is possible at all.
+      context.read<MembershipsProvider>().loadMine();
       _loadAvailability();
     });
   }
 
   Future<void> _loadAvailability() async {
-    final counts = await context.read<ReservationsProvider>()
-        .getTrainingBookingCounts(widget.training.id);
-    if (mounted) setState(() => _bookingCounts = counts);
+    final availability = await context
+        .read<ReservationsProvider>()
+        .getTrainingAvailability(widget.training.id);
+    if (mounted) setState(() => _availability = availability);
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final combined = DateTime(
       _selectedDate.year, _selectedDate.month, _selectedDate.day,
       _selectedTime.hour, _selectedTime.minute,
     );
-    final fmt = DateFormat('EEEE, MMM d, yyyy');
+    final fmt = DateFormat('EEEE, d. MMMM y.', Localizations.localeOf(context).languageCode);
     final timeFmt = DateFormat('HH:mm');
 
     return Consumer<AdditionalServicesProvider>(
@@ -68,7 +78,7 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                 _SectionHeader(l.training),
                 const SizedBox(height: 10),
                 _TrainingCard(training: widget.training),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 _SectionHeader(l.selectDate),
                 const SizedBox(height: 10),
@@ -77,14 +87,16 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                 _PickerTile(icon: Icons.access_time, label: timeFmt.format(combined), onTap: _pickTime),
                 const SizedBox(height: 16),
 
-                if (_bookingCounts.isNotEmpty)
+                if (_availability.isNotEmpty)
                   _AvailabilityStrip(
-                    bookingCounts: _bookingCounts,
+                    bookingCounts: {
+                      for (final entry in _availability.entries) entry.key: entry.value.bookedCount,
+                    },
                     maxCapacity: widget.training.maxCapacity,
                     selectedDate: _selectedDate,
                     onDayTap: (day) => setState(() => _selectedDate = day),
                   ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 _SectionHeader(l.reservationType),
                 const SizedBox(height: 10),
@@ -95,6 +107,26 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                     onTap: () => setState(() => _reservationType = type),
                   ),
                 )),
+
+                // Review item 19: a monthly booking is paid out of a package, so
+                // say up front whether the user has one that covers this training.
+                if (_reservationType == ReservationType.monthly)
+                  _MonthlyPackageBanner(
+                    membership: context
+                        .watch<MembershipsProvider>()
+                        .usableFor(widget.training.trainingTypeId),
+                    l: l,
+                    onBuy: () async {
+                      // Grab the provider before awaiting so nothing reaches for
+                      // a BuildContext once the shop screen has been popped.
+                      final memberships = context.read<MembershipsProvider>();
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MembershipsPage()),
+                      );
+                      await memberships.loadMine();
+                    },
+                  ),
                 const SizedBox(height: 8),
 
                 if (_hasConflict) ...[
@@ -106,8 +138,8 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                       border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
                     ),
                     child: Row(children: [
-                      const Icon(Icons.warning_amber, color: Colors.red, size: 20),
-                      const SizedBox(width: 12),
+                      Icon(Icons.warning_amber, color: Colors.red, size: 20),
+                      SizedBox(width: 12),
                       Expanded(child: Text(l.timeConflict,
                           style: const TextStyle(color: Colors.red, fontSize: 13))),
                     ]),
@@ -129,11 +161,11 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                     ),
                   ),
                   child: Row(children: [
-                    const Icon(Icons.schedule, color: Color(0xFFF39C12), size: 20),
-                    const SizedBox(width: 12),
+                    Icon(Icons.schedule, color: Color(0xFFF39C12), size: 20),
+                    SizedBox(width: 12),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(l.requestOutsideAvailability,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
                       Text(l.outsideAvailabilityHint,
                           style: TextStyle(color: Colors.grey[400], fontSize: 12)),
                     ])),
@@ -144,14 +176,14 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                     ),
                   ]),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
 
                 _SectionHeader(l.additionalServices),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(l.enhanceExperience, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                 const SizedBox(height: 12),
                 if (servicesProvider.isLoading)
-                  const Center(child: CircularProgressIndicator(color: Color(0xFFE8622A)))
+                  Center(child: CircularProgressIndicator(color: Color(0xFFE8622A)))
                 else if (servicesProvider.services.isEmpty)
                   Text(l.noAdditionalServices, style: TextStyle(color: Colors.grey[600], fontSize: 13))
                 else
@@ -179,7 +211,7 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                       Text('${servicesProvider.selectedIds.length} service(s) added',
                           style: const TextStyle(color: Colors.white70, fontSize: 13)),
                       const Spacer(),
-                      Text('+\$${servicesProvider.selectedTotal.toStringAsFixed(2)}',
+                      Text(formatMoneyDelta(servicesProvider.selectedTotal),
                           style: const TextStyle(color: Color(0xFF4A90D9), fontWeight: FontWeight.bold, fontSize: 14)),
                     ]),
                   ),
@@ -197,6 +229,10 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                     ),
                     onPressed: () {
                       setState(() => _hasConflict = false);
+                      // A refusal from the previous attempt (a time conflict, say)
+                      // would otherwise still be on screen after the user goes back
+                      // and picks a different slot.
+                      context.read<ReservationsProvider>().clearError();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -207,6 +243,12 @@ class _ReservationFormPageState extends State<ReservationFormPage> {
                             additionalServiceIds: servicesProvider.selectedIds.toList(),
                             selectedServices: servicesProvider.selectedServices,
                             requestOutsideAvailability: _requestOutsideAvailability,
+                            userMembershipId: _reservationType == ReservationType.monthly
+                                ? context
+                                    .read<MembershipsProvider>()
+                                    .usableFor(widget.training.trainingTypeId)
+                                    ?.id
+                                : null,
                             onTimeConflict: () => setState(() => _hasConflict = true),
                           ),
                         ),
@@ -272,7 +314,7 @@ class _TrainingCard extends StatelessWidget {
       const SizedBox(width: 14),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(training.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-        Text('\$${training.price.toStringAsFixed(0)} / session',
+        Text(AppLocalizations.of(context).perSession(formatMoney(training.price)),
             style: const TextStyle(color: Color(0xFFE8622A), fontSize: 13)),
       ])),
     ]),
@@ -336,10 +378,10 @@ class _TypeOption extends StatelessWidget {
               decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE8622A)),
             )) : null,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(type == ReservationType.oneTime ? l.oneTimeSession : l.monthlyPackage,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             Text(type == ReservationType.oneTime ? l.singleSession : l.recurringMonthly,
                 style: TextStyle(color: Colors.grey[400], fontSize: 12)),
           ]),
@@ -371,7 +413,7 @@ class _ServiceTile extends StatelessWidget {
             color: isSelected ? const Color(0xFF4A90D9) : Colors.grey, size: 20),
         const SizedBox(width: 12),
         Expanded(child: Text(service.name, style: const TextStyle(color: Colors.white, fontSize: 14))),
-        Text('+\$${service.price.toStringAsFixed(2)}',
+        Text(formatMoneyDelta(service.price),
             style: TextStyle(
               color: isSelected ? const Color(0xFF4A90D9) : Colors.grey[400],
               fontWeight: FontWeight.w600, fontSize: 13,
@@ -411,21 +453,24 @@ class _AvailabilityStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).languageCode;
     final days = bookingCounts.keys.toList()..sort();
-    final dayFmt = DateFormat('E');
-    final dateFmt = DateFormat('d');
+    final dayFmt = DateFormat('E', locale);
+    final dateFmt = DateFormat('d', locale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          const Text('Availability', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(l.availability,
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
           const SizedBox(width: 12),
-          _Dot(color: const Color(0xFF27AE60), label: 'Free'),
+          _Dot(color: const Color(0xFF27AE60), label: l.slotFree),
           const SizedBox(width: 8),
-          _Dot(color: const Color(0xFFF39C12), label: 'Limited'),
+          _Dot(color: const Color(0xFFF39C12), label: l.slotLimited),
           const SizedBox(width: 8),
-          _Dot(color: Colors.red, label: 'Full'),
+          _Dot(color: Colors.red, label: l.slotFull),
         ]),
         const SizedBox(height: 8),
         SizedBox(
@@ -493,4 +538,83 @@ class _Dot extends StatelessWidget {
       Text(label, style: TextStyle(color: Colors.grey[400], fontSize: 10)),
     ],
   );
+}
+
+/// Tells the user, before they reach the confirmation screen, whether a monthly
+/// booking can actually go through. Without this the form happily offered
+/// "Monthly" to someone with no package and the request failed at the API with
+/// NO_USABLE_MEMBERSHIP.
+class _MonthlyPackageBanner extends StatelessWidget {
+  final UserMembership? membership;
+  final AppLocalizations l;
+  final VoidCallback onBuy;
+
+  const _MonthlyPackageBanner({
+    required this.membership,
+    required this.l,
+    required this.onBuy,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final has = membership != null;
+    final accent = has ? const Color(0xFF2E7D32) : const Color(0xFFF39C12);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(has ? Icons.card_membership : Icons.info_outline, color: accent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (has) ...[
+                  Text(
+                    membership!.membershipPackageName ?? '',
+                    style: TextStyle(color: accent, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    l.sessionsLeft(membership!.sessionsRemaining, membership!.sessionsTotal),
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  Text(
+                    l.coveredByPackage,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ] else ...[
+                  Text(
+                    l.needPackageForMonthly,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                  ),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: onBuy,
+                    child: Text(
+                      l.buyPackage,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                        decorationColor: accent,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

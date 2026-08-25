@@ -11,21 +11,56 @@ class ReservationModel extends Reservation {
     required super.reservationType,
     required super.userId,
     required super.trainingId,
+    super.totalPrice,
+    super.isPaid,
+    super.isOutsideTrainerAvailability,
+    super.outsideAvailabilitySurcharge,
+    super.allowedNextStatuses,
+    super.cancelledAt,
+    super.cancelledByUserId,
+    super.cancellationReason,
+    super.completedAt,
     super.userName,
+    super.userEmail,
     super.trainingName,
+    super.trainerName,
+    super.additionalServiceIds,
+    super.userMembershipId,
   });
 
   factory ReservationModel.fromJson(Map<String, dynamic> json) {
+    final user = json['user'] as Map<String, dynamic>?;
+    final training = json['training'] as Map<String, dynamic>?;
+
+    final fullName = user == null ? null : '${user['name'] ?? ''} ${user['surname'] ?? ''}'.trim();
+
     return ReservationModel(
-      id: json['id'],
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      reservationDate: DateTime.tryParse(json['reservationDate'] ?? '') ?? DateTime.now(),
+      id: json['id'] ?? 0,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      reservationDate: DateTime.tryParse(json['reservationDate']?.toString() ?? '') ?? DateTime.now(),
       status: ReservationStatus.fromIndex(json['status'] ?? 0),
       reservationType: ReservationType.fromIndex(json['reservationType'] ?? 0),
-      userId: json['userId'],
-      trainingId: json['trainingId'],
-      userName: json['user']?['userName'],
-      trainingName: json['training']?['name'],
+      userId: json['userId'] ?? 0,
+      trainingId: json['trainingId'] ?? 0,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      isPaid: json['isPaid'] as bool? ?? false,
+      isOutsideTrainerAvailability: json['isOutsideTrainerAvailability'] as bool? ?? false,
+      outsideAvailabilitySurcharge: (json['outsideAvailabilitySurcharge'] as num?)?.toDouble() ?? 0.0,
+      allowedNextStatuses: (json['allowedNextStatuses'] as List?)
+              ?.map((e) => ReservationStatus.fromIndex(e as int))
+              .toList() ??
+          const [],
+      cancelledAt: DateTime.tryParse(json['cancelledAt']?.toString() ?? ''),
+      cancelledByUserId: json['cancelledByUserId'] as int?,
+      cancellationReason: json['cancellationReason'] as String?,
+      completedAt: DateTime.tryParse(json['completedAt']?.toString() ?? ''),
+      userName: (fullName != null && fullName.isNotEmpty) ? fullName : user?['userName'] as String?,
+      userEmail: user?['email'] as String?,
+      trainingName: training?['name'] as String?,
+      trainerName: training?['trainerName'] as String?,
+      additionalServiceIds:
+          (json['additionalServiceIds'] as List?)?.map((e) => e as int).toList() ?? const [],
+      userMembershipId: json['userMembershipId'] as int?,
     );
   }
 }
