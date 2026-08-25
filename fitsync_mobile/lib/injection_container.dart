@@ -1,4 +1,10 @@
 import 'package:get_it/get_it.dart';
+import 'features/help/data/datasources/help_remote_data_source.dart';
+import 'features/help/presentation/providers/help_provider.dart';
+import 'features/memberships/domain/usecases/cancel_membership.dart';
+import 'features/memberships/domain/usecases/create_membership_paypal_order.dart';
+import 'features/memberships/domain/usecases/capture_membership_paypal.dart';
+import 'features/memberships/domain/usecases/select_membership_cash.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -9,6 +15,7 @@ import 'features/auth/domain/usecases/login_user.dart';
 import 'features/auth/domain/usecases/register_user.dart';
 import 'features/auth/domain/usecases/get_current_user.dart';
 import 'features/auth/domain/usecases/change_password.dart';
+import 'features/auth/domain/usecases/logout_user.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
@@ -42,10 +49,20 @@ import 'features/additional_services/domain/usecases/get_additional_services.dar
 import 'features/additional_services/domain/repositories/additional_services_repository.dart';
 import 'features/additional_services/data/repositories/additional_services_repository_impl.dart';
 import 'features/additional_services/data/datasources/additional_services_remote_data_source.dart';
+import 'features/memberships/presentation/providers/memberships_provider.dart';
+import 'features/memberships/domain/usecases/get_membership_packages.dart';
+import 'features/memberships/domain/usecases/get_my_memberships.dart';
+import 'features/memberships/domain/usecases/purchase_membership.dart';
+import 'features/memberships/domain/repositories/memberships_repository.dart';
+import 'features/memberships/data/repositories/memberships_repository_impl.dart';
+import 'features/memberships/data/datasources/memberships_remote_data_source.dart';
 
 import 'features/notifications/presentation/providers/notifications_provider.dart';
 import 'features/notifications/domain/usecases/get_my_notifications.dart';
+import 'features/notifications/domain/usecases/get_unread_count.dart';
 import 'features/notifications/domain/usecases/mark_notification_read.dart';
+import 'features/notifications/domain/usecases/mark_all_notifications_read.dart';
+import 'features/notifications/data/services/notifications_hub_service.dart';
 import 'features/notifications/domain/repositories/notifications_repository.dart';
 import 'features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'features/notifications/data/datasources/notifications_remote_data_source.dart';
@@ -53,8 +70,7 @@ import 'features/notifications/data/datasources/notifications_remote_data_source
 import 'features/payments/presentation/providers/payments_provider.dart';
 import 'features/payments/domain/usecases/capture_paypal_order.dart';
 import 'features/payments/domain/usecases/create_paypal_order.dart';
-import 'features/payments/domain/usecases/confirm_payment.dart';
-import 'features/payments/domain/usecases/confirm_cash_payment.dart';
+import 'features/payments/domain/usecases/select_cash_payment.dart';
 import 'features/payments/domain/usecases/get_my_payments.dart';
 import 'features/payments/domain/repositories/payments_repository.dart';
 import 'features/payments/data/repositories/payments_repository_impl.dart';
@@ -73,11 +89,12 @@ Future<void> init() async {
     sendTimeout: const Duration(seconds: 10),
   )));
 
-  sl.registerFactory(() => AuthProvider(loginUser: sl(), registerUser: sl(), getCurrentUser: sl(), changePasswordUseCase: sl()));
+  sl.registerFactory(() => AuthProvider(loginUser: sl(), registerUser: sl(), getCurrentUser: sl(), changePasswordUseCase: sl(), logoutUser: sl()));
   sl.registerLazySingleton(() => LoginUser(sl()));
   sl.registerLazySingleton(() => RegisterUser(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
   sl.registerLazySingleton(() => ChangePassword(sl()));
+  sl.registerLazySingleton(() => LogoutUser(sl()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl(), localDataSource: sl()));
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
   sl.registerLazySingleton<AuthLocalDataSource>(() => AuthLocalDataSourceImpl(secureStorage: sl(), sharedPreferences: sl()));
@@ -112,26 +129,57 @@ Future<void> init() async {
   sl.registerLazySingleton<AdditionalServicesRepository>(() => AdditionalServicesRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<AdditionalServicesRemoteDataSource>(() => AdditionalServicesRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
 
-  sl.registerFactory(() => NotificationsProvider(
+  // Memberships - monthly packages (review item 19).
+  sl.registerFactory(() => MembershipsProvider(
+        cancelMembership: sl(),
+        createMembershipPayPalOrder: sl(),
+        captureMembershipPayPal: sl(),
+        selectMembershipCash: sl(),
+        getMembershipPackages: sl(),
+        getMyMemberships: sl(),
+        purchaseMembership: sl(),
+      ));
+  sl.registerLazySingleton(() => GetMembershipPackages(sl()));
+  sl.registerLazySingleton(() => GetMyMemberships(sl()));
+  sl.registerLazySingleton(() => PurchaseMembership(sl()));
+
+  sl.registerLazySingleton<HelpRemoteDataSource>(
+      () => HelpRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+  sl.registerFactory(() => HelpProvider(dataSource: sl()));
+  sl.registerLazySingleton(() => CancelMembership(sl()));
+  sl.registerLazySingleton(() => CreateMembershipPayPalOrder(sl()));
+  sl.registerLazySingleton(() => CaptureMembershipPayPal(sl()));
+  sl.registerLazySingleton(() => SelectMembershipCash(sl()));
+  sl.registerLazySingleton<MembershipsRepository>(() => MembershipsRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<MembershipsRemoteDataSource>(() => MembershipsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
+
+  // A single hub connection is shared by the whole app, so the provider is a
+  // lazy singleton rather than a factory: a new instance per screen would open a
+  // new socket each time.
+  sl.registerLazySingleton(() => NotificationsHubService(localDataSource: sl()));
+  sl.registerLazySingleton(() => NotificationsProvider(
     getMyNotifications: sl(),
+    getUnreadCount: sl(),
     markNotificationRead: sl(),
+    markAllNotificationsRead: sl(),
+    hubService: sl(),
   ));
   sl.registerLazySingleton(() => GetMyNotifications(sl()));
+  sl.registerLazySingleton(() => GetUnreadCount(sl()));
   sl.registerLazySingleton(() => MarkNotificationRead(sl()));
+  sl.registerLazySingleton(() => MarkAllNotificationsRead(sl()));
   sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<NotificationsRemoteDataSource>(() => NotificationsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
 
   sl.registerFactory(() => PaymentsProvider(
     createPayPalOrder: sl(),
     capturePayPalOrder: sl(),
-    confirmPayment: sl(),
-    confirmCashPayment: sl(),
+    selectCashPayment: sl(),
     getMyPayments: sl(),
   ));
   sl.registerLazySingleton(() => CreatePayPalOrder(sl()));
   sl.registerLazySingleton(() => CapturePayPalOrder(sl()));
-  sl.registerLazySingleton(() => ConfirmPayment(sl()));
-  sl.registerLazySingleton(() => ConfirmCashPayment(sl()));
+  sl.registerLazySingleton(() => SelectCashPayment(sl()));
   sl.registerLazySingleton(() => GetMyPayments(sl()));
   sl.registerLazySingleton<PaymentsRepository>(() => PaymentsRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<PaymentsRemoteDataSource>(() => PaymentsRemoteDataSourceImpl(dio: sl(), localDataSource: sl()));
